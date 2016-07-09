@@ -25,6 +25,7 @@ class DefaultQuery (private val events: () -> List) : Query {
         return process (
                 events ().setTimeMin (datetime (start, zone))
                          .setTimeMax (datetime (end,   zone))
+                         .setSingleEvents (true)
                             .execute ()
         )
     }
@@ -32,6 +33,7 @@ class DefaultQuery (private val events: () -> List) : Query {
     override fun starting (start: Instant, zone : TimeZone): Collection<Event> {
         return process (
                 events ().setTimeMin (datetime (start, zone))
+                         .setSingleEvents (true)
                             .execute ()
         )
     }
