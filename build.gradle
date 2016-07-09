@@ -3,7 +3,10 @@ version '1.0.0-SNAPSHOT'
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
+tasks.withType (JavaCompile) {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 repositories {
     mavenCentral()
@@ -11,6 +14,7 @@ repositories {
 
 dependencies {
     compile 'com.google.api-client:google-api-client:1.22.0'
+    compile 'com.google.apis:google-api-services-admin-directory:directory_v1-rev68-1.22.0'
     compile 'com.google.apis:google-api-services-calendar:v3-rev197-1.22.0'
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'
 
