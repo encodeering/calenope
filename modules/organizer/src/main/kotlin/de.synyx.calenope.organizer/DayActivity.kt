@@ -16,14 +16,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
-import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.client.util.ExponentialBackOff
-import com.google.api.services.admin.directory.Directory
-import com.google.api.services.admin.directory.DirectoryScopes
+import de.synyx.calenope.core.api.service.Board
+import de.synyx.calenope.core.spi.BoardProvider
 import java.util.*
 
 class DayActivity : AppCompatActivity () {
@@ -35,19 +32,12 @@ class DayActivity : AppCompatActivity () {
         private val REQUEST_AUTHORIZATION  = 1001
 
         private val PREF_ACCOUNT_NAME = "account-name"
-        private val SCOPES = listOf (DirectoryScopes.ADMIN_DIRECTORY_RESOURCE_CALENDAR_READONLY)
     }
 
-    private var account : Account?
-        get () =                 credential?.selectedAccount
-        set (value : Account?) { credential?.selectedAccount = value }
-
-    private var credential : GoogleAccountCredential? = null
+    private var account : Account? = null
 
     override fun onCreate (savedInstanceState : Bundle?) {
         super.onCreate    (savedInstanceState)
-
-        credential = GoogleAccountCredential.usingOAuth2 (this, SCOPES).setBackOff (ExponentialBackOff ())
 
         setContentView (R.layout.activity_day)
 
@@ -100,7 +90,7 @@ class DayActivity : AppCompatActivity () {
 
     private fun identify (name : String?, action : (name : String) -> Unit) {
         when (name) {
-            null -> startActivityForResult (credential?.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
+            null -> startActivityForResult (AccountPicker.newChooseAccountIntent (null, null, arrayOf (GoogleAccountManager.ACCOUNT_TYPE), true, null, null, null, null), REQUEST_ACCOUNT_PICKER)
             else -> action (name)
         }
     }
@@ -124,20 +114,20 @@ class DayActivity : AppCompatActivity () {
         val month : Int = Calendar.getInstance ().get (Calendar.MONTH)
     ) : AsyncTask<Unit, Unit, List<String>> () {
 
-        private var service : Directory? = null
+        private var board : Board
 
         init {
-            val transport   = AndroidHttp.newCompatibleTransport ()
-            val jsonFactory = JacksonFactory.getDefaultInstance  ()
+            val meta = mapOf (
+                "context" to applicationContext,
+                "account" to account!!
+            )
 
-            service = Directory.Builder (transport, jsonFactory, credential).setApplicationName ("Directory API Android Quickstart").build ()
+            board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta, { "Besprechungsraum" == it }) }.first()!!
         }
 
         private val data : List<String>
             get () {
-                val             result = service!!.resources ().calendars().list ("my_customer").setMaxResults (10).execute ()
-                val    users  = result.items
-                return users?.map { it.resourceName } ?: emptyList ()
+                return board.all ().map { it.id () }
             }
 
         override fun doInBackground (vararg params : Unit?) : List<String> {
