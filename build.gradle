@@ -1,44 +1,10 @@
+subprojects {
 group 'de.synyx'
-version '1.0.0-SNAPSHOT'
 
-apply plugin: 'java'
-apply plugin: 'kotlin'
 apply plugin: 'maven'
-
-tasks.withType (JavaCompile) {
-    sourceCompatibility = 1.6
-    targetCompatibility = 1.6
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
-    }
-}
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
 }
-
-dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
-
-    compile 'com.google.api-client:google-api-client:1.22.0'
-    compile 'com.google.apis:google-api-services-admin-directory:directory_v1-rev68-1.22.0'
-    compile 'com.google.apis:google-api-services-calendar:v3-rev197-1.22.0'
-    compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'
-
-    compile 'joda-time:joda-time:2.9.4'
-
-    testCompile 'junit:junit:4.11'
-}
-
-sourceSets {
-    main.java.srcDirs += 'src/main/kotlin'
-    main.output.resourcesDir ("build/classes/main")
-    test.java.srcDirs += 'src/test/kotlin'
-    test.output.resourcesDir = ("build/classes/test")
 }
