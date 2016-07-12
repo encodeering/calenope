@@ -9,3 +9,7 @@ subprojects {
         mavenLocal ()
     }
 }
+
+allprojects {
+    buildDir = "${this.properties['build.directory']}/${rootProject.name}/${project.name}"
+}
