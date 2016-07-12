@@ -7,8 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.util.Log
@@ -47,8 +45,6 @@ class DayActivity : AppCompatActivity () {
         val toolbar = findViewById (R.id.toolbar) as Toolbar?
         val button  = findViewById (R.id.button)  as Button?
             button?.setOnClickListener { update () }
-        val fab = findViewById (R.id.fab) as FloatingActionButton?
-            fab!!.setOnClickListener { view -> Snackbar.make (view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction ("Action", null).show () }
         val mWeekView = findViewById (R.id.weekView) as WeekView
             mWeekView.monthChangeListener = MonthLoader.MonthChangeListener { year, month -> (1..25).toList ().map { WeekViewEvent (it.toLong(), "meeting", calendar (year, month, it, 9, 0), calendar (year, month, it, 10, 15)) } }
 
