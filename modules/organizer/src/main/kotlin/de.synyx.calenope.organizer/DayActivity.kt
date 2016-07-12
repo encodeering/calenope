@@ -16,6 +16,9 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import android.widget.Toast
+import com.alamkanak.weekview.MonthLoader
+import com.alamkanak.weekview.WeekView
+import com.alamkanak.weekview.WeekViewEvent
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
@@ -46,8 +49,17 @@ class DayActivity : AppCompatActivity () {
             button?.setOnClickListener { update () }
         val fab = findViewById (R.id.fab) as FloatingActionButton?
             fab!!.setOnClickListener { view -> Snackbar.make (view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction ("Action", null).show () }
+        val mWeekView = findViewById (R.id.weekView) as WeekView
+            mWeekView.monthChangeListener = MonthLoader.MonthChangeListener { year, month -> (1..25).toList ().map { WeekViewEvent (it.toLong(), "meeting", calendar (year, month, it, 9, 0), calendar (year, month, it, 10, 15)) } }
 
         setSupportActionBar (toolbar)
+    }
+
+    private fun calendar (year : Int, month : Int, day : Int, hours : Int, minutes : Int) : Calendar {
+        val calendar = Calendar.getInstance ()
+            calendar.set (year, month, day, hours, minutes)
+
+        return calendar
     }
 
     override fun onCreateOptionsMenu (menu : Menu) : Boolean {
