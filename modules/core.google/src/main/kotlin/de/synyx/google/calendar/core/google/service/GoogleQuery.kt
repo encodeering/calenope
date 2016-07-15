@@ -1,4 +1,4 @@
-package de.synyx.google.calendar.core.internal.service
+package de.synyx.google.calendar.core.google.service
 
 import com.google.api.client.util.DateTime
 import com.google.api.services.calendar.Calendar.Events.List
@@ -9,8 +9,8 @@ import com.google.api.services.calendar.model.Events
 import de.synyx.google.calendar.core.api.model.Attendee
 import de.synyx.google.calendar.core.api.model.Event
 import de.synyx.google.calendar.core.api.service.Query
-import de.synyx.google.calendar.core.internal.model.DefaultAttendee
-import de.synyx.google.calendar.core.internal.model.DefaultEvent
+import de.synyx.google.calendar.core.std.model.MemoryAttendee
+import de.synyx.google.calendar.core.std.model.MemoryEvent
 import org.joda.time.DateTimeZone
 import org.joda.time.Instant
 import java.util.*
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author clausen - clausen@synyx.de
  */
-class DefaultQuery (private val events: () -> List) : Query {
+class GoogleQuery(private val events: () -> List) : Query {
 
     override fun between  (start: Instant, end: Instant, zone : TimeZone): Collection<Event> {
         return process (
@@ -41,7 +41,7 @@ class DefaultQuery (private val events: () -> List) : Query {
     private fun process (events : Events) : Collection<Event> = events.items.filterNot { it.start == null }.map { convert (it) }
 
     private fun convert (e: com.google.api.services.calendar.model.Event): Event {
-        return DefaultEvent (
+        return MemoryEvent (
                 id          = e.id,
                 title       = e.summary,
                 location    = e.location,
@@ -72,8 +72,8 @@ class DefaultQuery (private val events: () -> List) : Query {
     }
 
     private fun attendee (attendee : Any) = when (attendee) {
-        is EventAttendee -> DefaultAttendee (name = attendee.displayName ?: attendee.email, email = attendee.email)
-        is Creator -> DefaultAttendee (name = attendee.displayName ?: attendee.email, email = attendee.email)
+        is EventAttendee -> MemoryAttendee (name = attendee.displayName ?: attendee.email, email = attendee.email)
+        is Creator       -> MemoryAttendee (name = attendee.displayName ?: attendee.email, email = attendee.email)
         else             -> throw UnsupportedOperationException ("$attendee unsupported")
     }
 

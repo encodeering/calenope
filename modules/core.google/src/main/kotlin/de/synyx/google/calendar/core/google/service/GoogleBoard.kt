@@ -1,19 +1,20 @@
-package de.synyx.google.calendar.core.internal.service
+package de.synyx.google.calendar.core.google.service
 
 import com.google.api.services.admin.directory.Directory
 import com.google.api.services.admin.directory.model.CalendarResource
 import com.google.api.services.calendar.model.CalendarListEntry
+import de.synyx.google.calendar.core.google.GoogleApi
+import de.synyx.google.calendar.core.google.service.GoogleQuery
 import de.synyx.google.calendar.core.api.model.Calendar
 import de.synyx.google.calendar.core.api.service.Board
 import de.synyx.google.calendar.core.api.service.Query
-import de.synyx.google.calendar.core.internal.GoogleApi
-import de.synyx.google.calendar.core.internal.model.DefaultCalendar
+import de.synyx.google.calendar.core.std.model.MemoryCalendar
 import java.util.*
 
 /**
  * @author clausen - clausen@synyx.de
  */
-class DefaultBoard constructor (api: GoogleApi, private val room: (CalendarResource) -> Boolean) : Board {
+class GoogleBoard constructor (api: GoogleApi, private val room: (CalendarResource) -> Boolean) : Board {
 
     private val calendar  : com.google.api.services.calendar.Calendar
     private val directory : Directory
@@ -46,7 +47,7 @@ class DefaultBoard constructor (api: GoogleApi, private val room: (CalendarResou
                  token = calendars.nextPageToken
         } while (token != null)
 
-        return resources.filter (room).map { DefaultCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
+        return resources.filter (room).map { MemoryCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
     }
 
     protected fun byCalendar (): Collection<Calendar> {
@@ -64,9 +65,9 @@ class DefaultBoard constructor (api: GoogleApi, private val room: (CalendarResou
                  token = calendars.nextPageToken
         } while (token != null)
 
-        return resources.map { DefaultCalendar (id = it.id, query = query (it.id)) }
+        return resources.map { MemoryCalendar (id = it.id, query = query (it.id)) }
     }
 
-    private fun query (name: String): Query = DefaultQuery { calendar.events ().list (name) }
+    private fun query (name: String): Query = GoogleQuery { calendar.events ().list (name) }
 
 }

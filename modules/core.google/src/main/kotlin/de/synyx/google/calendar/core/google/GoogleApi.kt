@@ -1,4 +1,4 @@
-package de.synyx.google.calendar.core.internal
+package de.synyx.google.calendar.core.google
 
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.HttpTransport
