@@ -1,4 +1,4 @@
-package de.synyx.google.calendar.core.google
+package de.synyx.google.calendar.core.google.standalone.internal.spi
 
 import de.synyx.google.calendar.core.api.service.Board
 import de.synyx.google.calendar.core.spi.BoardProvider
@@ -12,7 +12,7 @@ import java.util.*
 /**
  * @author clausen - clausen@synyx.de
  */
-object GoogleBoardSample {
+object GoogleStandaloneBoardSample {
 
     @JvmStatic fun main(args : Array<String>) {
         val board = board(args[0])

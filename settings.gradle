@@ -1,3 +1,4 @@
 rootProject.name = 'google.calendar'
 include ':modules:core'
 include ':modules:core.google'
+include ':modules:core.google.standalone'
