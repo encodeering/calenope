@@ -1,11 +1,11 @@
-package de.synyx.google.calendar.core.internal.model
+package de.synyx.google.calendar.core.std.model
 
 import de.synyx.google.calendar.core.api.model.Attendee
 
 /**
  * @author clausen - clausen@synyx.de
  */
-data class DefaultAttendee (
+data class MemoryAttendee(
 
     private val name  : String,
     private val email : String?

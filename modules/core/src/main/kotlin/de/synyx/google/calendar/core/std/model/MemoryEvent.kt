@@ -1,4 +1,4 @@
-package de.synyx.google.calendar.core.internal.model
+package de.synyx.google.calendar.core.std.model
 
 import de.synyx.google.calendar.core.api.model.Attendee
 import de.synyx.google.calendar.core.api.model.Event
@@ -7,7 +7,7 @@ import org.joda.time.Instant
 /**
  * @author clausen - clausen@synyx.de
  */
-data class DefaultEvent (
+data class MemoryEvent(
 
         private val id          : String,
         private val title       : String,

@@ -1,4 +1,4 @@
-package de.synyx.google.calendar.core.internal.model
+package de.synyx.google.calendar.core.std.model
 
 import de.synyx.google.calendar.core.api.model.Calendar
 import de.synyx.google.calendar.core.api.service.Query
@@ -6,7 +6,7 @@ import de.synyx.google.calendar.core.api.service.Query
 /**
  * @author clausen - clausen@synyx.de
  */
-data class DefaultCalendar (
+data class MemoryCalendar(
 
     private val id    : String,
     private val query : Query
