@@ -1,0 +1,47 @@
+version '1.0.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+buildscript {
+    repositories {
+        mavenCentral ()
+    }
+    dependencies {
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    compile 'joda-time:joda-time:2.9.4'
+
+    testCompile 'junit:junit:4.11'
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    main.output.resourcesDir ("build/classes/main")
+    test.java.srcDirs += 'src/test/kotlin'
+    test.output.resourcesDir = ("build/classes/test")
+}
+
+jar {
+    baseName = "${rootProject.name}.core"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId jar.baseName
+            from components.java
+        }
+    }
+}

@@ -1,0 +1,41 @@
+version '1.0.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+buildscript {
+    repositories {
+        mavenCentral ()
+    }
+    dependencies {
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+    }
+}
+
+dependencies {
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+
+    compile 'de.synyx:google.calendar.core:1.0.0-SNAPSHOT'
+    compile 'de.synyx:google.calendar.core.google:1.0.0-SNAPSHOT'
+
+    compile 'com.google.api-client:google-api-client:1.22.0'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'
+
+    testCompile 'junit:junit:4.11'
+}
+
+jar {
+    baseName = "${rootProject.name}.core.google.standalone"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId jar.baseName
+            from components.java
+        }
+    }
+}
