@@ -1,4 +1,4 @@
-rootProject.name = 'google.calendar'
+rootProject.name = 'calenope'
 include ':modules:core'
 include ':modules:core.google'
 include ':modules:core.google.android'
