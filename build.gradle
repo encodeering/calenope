@@ -11,5 +11,5 @@ subprojects {
 }
 
 allprojects {
-    buildDir = "${this.properties['build.directory']}/${rootProject.name}/${project.name}"
+    buildDir = "${this.properties['build.directory'] ?: 'build'}/${rootProject.name}/${project.name}"
 }
