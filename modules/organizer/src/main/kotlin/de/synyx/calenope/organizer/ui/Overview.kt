@@ -32,13 +32,6 @@ class Overview : Fragment () {
                     activity.onOverviewClick (item)
                 }
         }
-
-        update (
-            listOf (
-                "Nullpointer",
-                "MemoryLeak"
-            )
-        )
     }
 
     override fun onCreateView (inflater : LayoutInflater?, container : ViewGroup?, savedInstanceState : Bundle?) : View {
