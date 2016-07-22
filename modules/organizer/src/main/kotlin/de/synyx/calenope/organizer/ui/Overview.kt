@@ -21,11 +21,29 @@ class Overview : Fragment () {
     override fun onActivityCreated (savedInstanceState : Bundle?) {
         super.onActivityCreated    (savedInstanceState)
 
+        val   activity = activity
+
+        when (activity) {
+            is Interaction ->
+                grid.setOnItemClickListener { parent, view, position, id ->
+                    val        adapter = grid.adapter as OverviewAdapter
+                    val item = adapter.getItem (position)
+
+                    activity.onOverviewClick (item.first)
+                }
+        }
+
         grid.adapter = OverviewAdapter () { activity.layoutInflater }
     }
 
     override fun onCreateView (inflater : LayoutInflater?, container : ViewGroup?, savedInstanceState : Bundle?) : View {
         return inflater?.inflate (R.layout.overview, container, false)!!
+    }
+
+    interface Interaction {
+
+        fun onOverviewClick (name : String) : Unit
+
     }
 
 }
