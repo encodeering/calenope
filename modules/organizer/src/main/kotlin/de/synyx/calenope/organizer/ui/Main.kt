@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.R
@@ -42,7 +43,7 @@ class Main : AppCompatActivity (), Overview.Interaction {
 
     private var board : Board? by Delegates.observable (null as Board?) {
         property, previous, board ->
-            Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { board?.all ()?.map { it.id () } }.subscribe (overviewsource)
+            Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { oauth { all ().map { it.id () } } }.subscribe (overviewsource)
     }
 
     override fun onCreate (savedInstanceState : Bundle?) {
@@ -122,6 +123,20 @@ class Main : AppCompatActivity (), Overview.Interaction {
         )
 
         return ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.first ()!!
+    }
+
+    private fun <R> oauth (command : Board.() -> R) : R {
+        try {
+            return command (board !!)
+        } catch             (e : Exception) {
+            Log.e (Main.TAG, e.message, e)
+
+            when (e) {
+                is UserRecoverableAuthIOException -> startActivityForResult (e.intent, Main.REQUEST_AUTHORIZATION)
+            }
+
+            throw e
+        }
     }
 
 }
