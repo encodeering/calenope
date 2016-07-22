@@ -43,7 +43,7 @@ class Main : AppCompatActivity (), Overview.Interaction {
 
     private var board : Board? by Delegates.observable (null as Board?) {
         property, previous, board ->
-            Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { oauth { all ().map { it.id () } } }.subscribe (overviewsource)
+            oauth { all ().map { it.id () } }.subscribe (overviewsource)
     }
 
     override fun onCreate (savedInstanceState : Bundle?) {
@@ -125,17 +125,15 @@ class Main : AppCompatActivity (), Overview.Interaction {
         return ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.first ()!!
     }
 
-    private fun <R> oauth (command : Board.() -> R) : R {
-        try {
-            return command (board !!)
-        } catch             (e : Exception) {
+    private fun <R> oauth (command : Board.() -> R) : Observable<R> {
+        return Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { command (board!!) }.onErrorResumeNext { e ->
             Log.e (Main.TAG, e.message, e)
 
             when (e) {
                 is UserRecoverableAuthIOException -> startActivityForResult (e.intent, Main.REQUEST_AUTHORIZATION)
             }
 
-            throw e
+            Observable.empty<R> ()
         }
     }
 
