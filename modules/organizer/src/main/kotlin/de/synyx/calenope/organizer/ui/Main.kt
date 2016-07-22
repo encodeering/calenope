@@ -52,7 +52,7 @@ class Main : AppCompatActivity (), Overview.Interaction {
 
         subscription = CompositeSubscription (bindOverview (overviewsource))
 
-        authenticate (success = { board = board (it) })
+        update ()
     }
 
     override fun onDestroy () {
@@ -77,9 +77,11 @@ class Main : AppCompatActivity (), Overview.Interaction {
                             editor.putString (PREF_ACCOUNT_NAME, name)
                             editor.apply ()
                     }
+
+                    update ()
                 }
 
-            REQUEST_AUTHORIZATION  -> {}
+            REQUEST_AUTHORIZATION  -> if (resultcode == Activity.RESULT_OK) update ()
         }
     }
 
@@ -96,6 +98,8 @@ class Main : AppCompatActivity (), Overview.Interaction {
             }
         })
     }
+
+    private fun update () = authenticate (success = { board = board (it) })
 
     private fun user         (name : String?) = GoogleAccountManager (this).getAccountByName (name)
 
