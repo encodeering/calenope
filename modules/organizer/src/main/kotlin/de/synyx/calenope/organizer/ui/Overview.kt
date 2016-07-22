@@ -38,15 +38,21 @@ private class OverviewAdapter (private val inflater : () -> LayoutInflater) : Ba
     )
 
     override fun getView (position : Int, previous : View?, parent : ViewGroup?) : View {
-        val        inflater = inflater.invoke ()
-        val view = inflater.inflate (R.layout.overview_tile, parent, false)
+        val holder : ViewCache?
 
-        val item = getItem (position)
+        when (previous) {
+            null -> {
+                    holder = ViewCache (parent)
+                    holder.view.tag = holder
+            }
+            else -> holder = previous.tag as ViewCache
+        }
 
-        val room      = view.findViewById (R.id.overview_tile_room) as TextView
-            room.text = item
+        holder.apply {
+            room.text = getItem (position)
+        }
 
-        return view
+        return holder.view
     }
 
     override fun getItem   (position : Int) : String = items[position]
@@ -54,5 +60,12 @@ private class OverviewAdapter (private val inflater : () -> LayoutInflater) : Ba
     override fun getItemId (position : Int) : Long = position.toLong ()
 
     override fun getCount  () : Int = items.size
+
+    private inner class ViewCache (parent: ViewGroup?) {
+
+        val view   : View     by lazy { inflater ().inflate (R.layout.overview_tile, parent, false) }
+        val room   : TextView by lazy { view.findViewById   (R.id.overview_tile_room)   as TextView }
+
+    }
 
 }
