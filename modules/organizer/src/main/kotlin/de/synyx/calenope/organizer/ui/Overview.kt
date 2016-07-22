@@ -29,15 +29,24 @@ class Overview : Fragment () {
                     val        adapter = grid.adapter as OverviewAdapter
                     val item = adapter.getItem (position)
 
-                    activity.onOverviewClick (item.first)
+                    activity.onOverviewClick (item)
                 }
         }
 
-        grid.adapter = OverviewAdapter () { activity.layoutInflater }
+        update (
+            listOf (
+                "Nullpointer",
+                "MemoryLeak"
+            )
+        )
     }
 
     override fun onCreateView (inflater : LayoutInflater?, container : ViewGroup?, savedInstanceState : Bundle?) : View {
         return inflater?.inflate (R.layout.overview, container, false)!!
+    }
+
+    fun update (events : Collection<String>) {
+        grid.adapter = OverviewAdapter (events) { activity.layoutInflater }
     }
 
     interface Interaction {
@@ -48,12 +57,10 @@ class Overview : Fragment () {
 
 }
 
-private class OverviewAdapter (private val inflater : () -> LayoutInflater) : BaseAdapter () {
-
-    private val items = listOf (
-        "Nullpointer",
-        "MemoryLeak"
-    )
+private class OverviewAdapter (
+    private val items    : Collection<String> = emptyList(),
+    private val inflater : () -> LayoutInflater
+) : BaseAdapter () {
 
     override fun getView (position : Int, previous : View?, parent : ViewGroup?) : View {
         val holder : ViewCache?
@@ -73,7 +80,7 @@ private class OverviewAdapter (private val inflater : () -> LayoutInflater) : Ba
         return holder.view
     }
 
-    override fun getItem   (position : Int) : String = items[position]
+    override fun getItem   (position : Int) : String = items.elementAt (position)
 
     override fun getItemId (position : Int) : Long = position.toLong ()
 
