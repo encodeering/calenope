@@ -5,4 +5,5 @@
     <string name="account">account</string>
     <string name="account_default">""</string>
     <string name="save_error">Couldn\'t save information</string>
+    <string name="request_runtime_permission">Application requires a permission to Read Contacts</string>
 </resources>
