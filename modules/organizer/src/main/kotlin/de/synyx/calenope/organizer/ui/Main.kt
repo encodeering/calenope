@@ -51,6 +51,10 @@ class Main : AppCompatActivity (), Overview.Interaction {
         setContentView (R.layout.main)
 
         subscription = CompositeSubscription (bindOverview (overviewsource))
+    }
+
+    override fun onResume () {
+        super.onResume ()
 
         update ()
     }
