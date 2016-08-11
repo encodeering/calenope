@@ -12,13 +12,7 @@ import android.util.Log
 import android.widget.LinearLayout
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import de.synyx.calenope.core.api.service.Board
-import de.synyx.calenope.core.spi.BoardProvider
-import rx.Observable
 import rx.Observer
-import rx.android.schedulers.AndroidSchedulers
-import rx.schedulers.Schedulers
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.centerHorizontal
@@ -27,10 +21,12 @@ import trikita.anvil.BaseDSL.margin
 import trikita.anvil.BaseDSL.textSize
 import trikita.anvil.DSL.FILL
 import trikita.anvil.DSL.adapter
+import trikita.anvil.DSL.button
 import trikita.anvil.DSL.gridView
 import trikita.anvil.DSL.horizontalSpacing
 import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.numColumns
+import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.onItemClick
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
@@ -41,9 +37,6 @@ import trikita.anvil.DSL.textColor
 import trikita.anvil.DSL.textView
 import trikita.anvil.DSL.verticalSpacing
 import trikita.anvil.RenderableAdapter
-import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 
 /**
  * @author clausen - clausen@synyx.de
@@ -54,7 +47,6 @@ class Main : AppCompatActivity () {
         private val TAG = Main::class.java.name
 
         private val REQUEST_ACCOUNT_PICKER = 1000
-        private val REQUEST_AUTHORIZATION  = 1001
 
         private val PREF_ACCOUNT_NAME = "account-name"
     }
@@ -105,11 +97,6 @@ class Main : AppCompatActivity () {
         }
     }
 
-    private var board : Board? by Delegates.observable (null as Board?) {
-        property, previous, board ->
-            oauth { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (tiles)
-    }
-
     override fun onCreate (savedInstanceState : Bundle?) {
         super.onCreate    (savedInstanceState)
 
@@ -117,6 +104,11 @@ class Main : AppCompatActivity () {
             linearLayout {
                 size (FILL, FILL)
                 orientation (LinearLayout.VERTICAL)
+
+                button {
+                    text ("Update")
+                    onClick { Application.calendars (tiles) }
+                }
 
                 gridView {
                     size (FILL, FILL)
@@ -152,8 +144,6 @@ class Main : AppCompatActivity () {
 
                     update ()
                 }
-
-            REQUEST_AUTHORIZATION  -> if (resultcode == Activity.RESULT_OK) update ()
         }
     }
 
@@ -161,7 +151,7 @@ class Main : AppCompatActivity () {
         Log.d (TAG, "Clicked on $name")
     }
 
-    private fun update () = authenticate (success = { board = board (it) })
+    private fun update () = authenticate (success = { Application.login (it) })
 
     private fun user         (name : String?) = GoogleAccountManager (this).getAccountByName (name)
 
@@ -170,27 +160,6 @@ class Main : AppCompatActivity () {
         when (account) {
             null -> startActivityForResult (AccountPicker.newChooseAccountIntent (null, null, arrayOf (GoogleAccountManager.ACCOUNT_TYPE), true, null, null, null, null), REQUEST_ACCOUNT_PICKER)
             else -> success (account)
-        }
-    }
-
-    private fun board (account : Account) : Board {
-        val meta = mapOf (
-            "context" to applicationContext,
-            "account" to account
-        )
-
-        return ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.first ()!!
-    }
-
-    private fun <R> oauth (command : Board.() -> R) : Observable<R> {
-        return Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { command (board!!) }.onErrorResumeNext { e ->
-            Log.e (Main.TAG, e.message, e)
-
-            when (e) {
-                is UserRecoverableAuthIOException -> startActivityForResult (e.intent, Main.REQUEST_AUTHORIZATION)
-            }
-
-            Observable.empty<R> ()
         }
     }
 
