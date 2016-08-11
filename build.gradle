@@ -3,6 +3,14 @@ subprojects {
 
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
+    apply plugin: 'idea'
+
+    idea {
+        module {
+            downloadJavadoc = true
+            downloadSources = true
+        }
+    }
 
     repositories {
         mavenCentral ()
