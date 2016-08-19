@@ -1,6 +1,5 @@
 package de.synyx.calenope.organizer.ui
 
-import android.accounts.Account
 import android.accounts.AccountManager
 import android.app.Activity
 import android.content.Context
@@ -9,6 +8,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
+import de.synyx.calenope.organizer.Action
 
 /**
  * @author clausen - clausen@synyx.de
@@ -52,15 +52,15 @@ class Main : AppCompatActivity () {
         }
     }
 
-    private fun update () = authenticate (success = { Application.login (it) })
+    private fun update () = authenticate { Application.store ().dispatch (it) }
 
     private fun user         (name : String?) = GoogleAccountManager (this).getAccountByName (name)
 
-    private fun authenticate (name : String? = getPreferences (Context.MODE_PRIVATE).getString (PREF_ACCOUNT_NAME, null), success : (Account) -> Unit = {}) {
+    private fun authenticate (name : String? = getPreferences (Context.MODE_PRIVATE).getString (PREF_ACCOUNT_NAME, null), success : (Action<*>) -> Unit = {}) {
         val   account = user (name)
         when (account) {
             null -> startActivityForResult (AccountPicker.newChooseAccountIntent (null, null, arrayOf (GoogleAccountManager.ACCOUNT_TYPE), true, null, null, null, null), REQUEST_ACCOUNT_PICKER)
-            else -> success (account)
+            else -> success (Action.SelectAccount (name!!))
         }
     }
 

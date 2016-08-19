@@ -2,6 +2,7 @@ package de.synyx.calenope.organizer.ui
 
 import android.accounts.Account
 import android.util.Log
+import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
@@ -79,6 +80,7 @@ class Application () : Android () {
         override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
             when (action) {
                 is Action.UpdateOverview -> return Application.calendars (Observers.create { calendars -> next.dispatch (Action.UpdateOverview (calendars)) })
+                is Action.SelectAccount  -> Application.login (GoogleAccountManager (self).getAccountByName (action.payload))
                 is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
             }
 
