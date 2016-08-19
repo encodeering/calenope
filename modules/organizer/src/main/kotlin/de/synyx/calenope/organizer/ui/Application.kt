@@ -5,10 +5,15 @@ import android.util.Log
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
+import de.synyx.calenope.organizer.Action
+import de.synyx.calenope.organizer.State
 import rx.Observable
 import rx.Observer
 import rx.android.schedulers.AndroidSchedulers
+import rx.observers.Observers
 import rx.schedulers.Schedulers
+import trikita.anvil.Anvil
+import trikita.jedux.Store
 import java.util.*
 import java.util.concurrent.TimeUnit
 import android.app.Application as Android
@@ -24,6 +29,8 @@ class Application () : Android () {
         private val TAG = Application::class.java.name
 
         private var self : Application? = null
+
+        fun store () : Store<Action<*>, State> = self!!.store!!
 
         fun calendars (observer : Observer<Collection<String>>) {
             self!!.oauth { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (observer)
@@ -44,10 +51,15 @@ class Application () : Android () {
 
     private var board : Board? = null
 
+    private var store : Store<Action<*>, State>? = null
+
     override fun onCreate () {
         super.onCreate ()
 
         Application.self = this
+
+        store = Store (State.Reducer, State.Default (), PseudoMiddleware ())
+        store?.subscribe { Anvil.render () }
     }
 
     private fun <R> oauth (command : Board.() -> R) : Observable<R> {
@@ -60,6 +72,19 @@ class Application () : Android () {
 
             Observable.empty<R> ()
         }
+    }
+
+    private class PseudoMiddleware : Store.Middleware<Action<*>, State> {
+
+        override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
+            when (action) {
+                is Action.UpdateOverview -> return Application.calendars (Observers.create { calendars -> next.dispatch (Action.UpdateOverview (calendars)) })
+                is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
+            }
+
+            next.dispatch (action)
+        }
+
     }
 
 }

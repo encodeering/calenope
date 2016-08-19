@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 
@@ -17,8 +16,6 @@ import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccoun
 class Main : AppCompatActivity () {
 
     companion object {
-        private val TAG = Main::class.java.name
-
         private val REQUEST_ACCOUNT_PICKER = 1000
 
         private val PREF_ACCOUNT_NAME = "account-name"
@@ -53,10 +50,6 @@ class Main : AppCompatActivity () {
                     update ()
                 }
         }
-    }
-
-    fun onOverviewClick (name : String) {
-        Log.d (TAG, "Clicked on $name")
     }
 
     private fun update () = authenticate (success = { Application.login (it) })

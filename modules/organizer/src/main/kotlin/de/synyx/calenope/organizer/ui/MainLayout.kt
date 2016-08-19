@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.widget.LinearLayout
+import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.R
 import rx.Observer
 import trikita.anvil.Anvil
@@ -45,6 +46,8 @@ import trikita.anvil.design.DesignDSL.coordinatorLayout
 
 class MainLayout (private val main : Main) : RenderableView (main) {
 
+    private val store by lazy { Application.store () }
+
     private val scrolling by lazy {
         val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
             params.behavior = AppBarLayout.ScrollingViewBehavior ()
@@ -52,6 +55,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
     }
 
     override fun view () {
+        bind ()
         overview ()
     }
 
@@ -73,6 +77,10 @@ class MainLayout (private val main : Main) : RenderableView (main) {
         }
     }
 
+    private fun bind () {
+        tiles.onNext (store.state.overview.calendars)
+    }
+
     private fun overview () {
         coordinatorLayout {
             size (MATCH, MATCH)
@@ -91,7 +99,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
                     button {
                         text ("Update")
-                        onClick { Application.calendars (tiles) }
+                        onClick { store.dispatch (Action.UpdateOverview ()) }
                     }
                 }
             }
@@ -105,7 +113,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     numColumns (2)
                     horizontalSpacing (dip (0))
                     verticalSpacing   (dip (0))
-                    onItemClick { adapter, view, position, id -> main.onOverviewClick (adapter.getItemAtPosition(position) as String? ?: "") } // TODO should be changed to a dispatch action later
+                    onItemClick { adapter, view, position, id -> store.dispatch (Action.SelectCalendar (adapter.getItemAtPosition(position) as String? ?: "")) }
                 }
             }
         }
