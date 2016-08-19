@@ -49,6 +49,8 @@ dependencies {
     compile 'com.github.alamkanak:android-week-view:1.2.6'
     compile 'com.google.android.gms:play-services-auth:9.2.1'
     compile 'co.trikita:anvil-sdk19:0.4.0'
+    compile 'co.trikita:anvil-appcompat-v7:0.4.0'
+    compile 'co.trikita:anvil-design:0.4.0'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'io.reactivex:rxjava:1.1.6'
 

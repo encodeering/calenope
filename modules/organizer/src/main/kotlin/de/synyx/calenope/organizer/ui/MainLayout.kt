@@ -1,9 +1,15 @@
 package de.synyx.calenope.organizer.ui
 
 import android.graphics.Color
+import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CoordinatorLayout
 import android.widget.LinearLayout
+import de.synyx.calenope.organizer.R
 import rx.Observer
-import trikita.anvil.DSL.FILL
+import trikita.anvil.Anvil
+import trikita.anvil.BaseDSL.FILL
+import trikita.anvil.BaseDSL.MATCH
+import trikita.anvil.BaseDSL.init
 import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.adapter
 import trikita.anvil.DSL.button
@@ -11,6 +17,7 @@ import trikita.anvil.DSL.centerHorizontal
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.gridView
 import trikita.anvil.DSL.horizontalSpacing
+import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.numColumns
@@ -27,12 +34,22 @@ import trikita.anvil.DSL.textView
 import trikita.anvil.DSL.verticalSpacing
 import trikita.anvil.RenderableAdapter
 import trikita.anvil.RenderableView
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
+import trikita.anvil.design.DesignDSL.appBarLayout
+import trikita.anvil.design.DesignDSL.coordinatorLayout
 
 /**
  * @author clausen - clausen@synyx.de
  */
 
 class MainLayout (private val main : Main) : RenderableView (main) {
+
+    private val scrolling by lazy {
+        val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
+            params.behavior = AppBarLayout.ScrollingViewBehavior ()
+            params
+    }
 
     override fun view () {
         overview ()
@@ -57,14 +74,30 @@ class MainLayout (private val main : Main) : RenderableView (main) {
     }
 
     private fun overview () {
-        linearLayout {
-            size (FILL, FILL)
+        coordinatorLayout {
+            size (MATCH, MATCH)
             orientation (LinearLayout.VERTICAL)
 
-            button {
-                text ("Update")
-                onClick { Application.calendars (tiles) } // TODO should be changed to a dispatch action later
+            appBarLayout {
+                size (MATCH, WRAP)
+
+                toolbar {
+                    init {
+                        main.setTheme (R.style.AppTheme_AppBarOverlay)
+                        main.setSupportActionBar (Anvil.currentView ())
+                    }
+
+                    popupTheme (R.style.AppTheme_PopupOverlay)
+
+                    button {
+                        text ("Update")
+                        onClick { Application.calendars (tiles) }
+                    }
+                }
             }
+
+            linearLayout {
+                layoutParams (scrolling)
 
             gridView {
                 size (FILL, FILL)
@@ -73,6 +106,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 horizontalSpacing (dip (0))
                 verticalSpacing   (dip (0))
                 onItemClick { adapter, view, position, id -> main.onOverviewClick (adapter.getItemAtPosition(position) as String? ?: "") } // TODO should be changed to a dispatch action later
+            }
             }
         }
     }
