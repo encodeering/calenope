@@ -14,6 +14,9 @@ interface Action<out T> {
     class SelectCalendar (private val name : String) : Action<String>
         by Simple (name)
 
+    class SelectAccount (private val name : String) : Action<String>
+        by Simple (name)
+
     private class Simple<out T> (override val payload : T) : Action<T>
 
 }
