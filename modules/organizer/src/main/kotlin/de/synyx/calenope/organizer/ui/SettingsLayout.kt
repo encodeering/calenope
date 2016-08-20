@@ -9,6 +9,7 @@ import android.preference.Preference
 import android.preference.PreferenceFragment
 import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
+import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.R
 
 class SettingsLayout () : PreferenceFragment (), SharedPreferences.OnSharedPreferenceChangeListener {
@@ -33,6 +34,7 @@ class SettingsLayout () : PreferenceFragment (), SharedPreferences.OnSharedPrefe
         }
     }
 
+    private val store   by lazy { Application.store () }
     private val account by lazy { findPreference (getString (R.string.account)) }
 
     override fun onCreate (bundle : Bundle?) {
@@ -81,6 +83,9 @@ class SettingsLayout () : PreferenceFragment (), SharedPreferences.OnSharedPrefe
         }
 
         this.account.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference, value ->
+            if (value is String &&
+                value.isNotEmpty ()) store.dispatch (Action.SelectAccount (value))
+
             true
         }
     }

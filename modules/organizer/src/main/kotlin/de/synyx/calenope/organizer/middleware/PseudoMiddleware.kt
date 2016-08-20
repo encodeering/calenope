@@ -10,6 +10,7 @@ import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.ui.Application
+import de.synyx.calenope.organizer.ui.Settings
 import rx.Observable
 import rx.Observer
 import rx.android.schedulers.AndroidSchedulers
@@ -32,6 +33,7 @@ class PseudoMiddleware (private val application : Application) : Store.Middlewar
     override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
         when (action) {
             is Action.UpdateOverview -> return calendars (Observers.create { calendars -> next.dispatch (Action.UpdateOverview(calendars)) })
+            is Action.UpdateSetting  -> action.payload.startActivity (Intent (action.payload, Settings::class.java))
             is Action.SelectAccount  -> login (GoogleAccountManager (application).getAccountByName (action.payload))
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
         }

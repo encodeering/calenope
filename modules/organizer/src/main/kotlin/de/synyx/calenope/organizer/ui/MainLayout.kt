@@ -98,6 +98,11 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     popupTheme (R.style.AppTheme_PopupOverlay)
 
                     button {
+                        text ("Setting")
+                        onClick { store.dispatch (Action.UpdateSetting (main)) }
+                    }
+
+                    button {
                         text ("Update")
                         onClick { store.dispatch (Action.UpdateOverview ()) }
                     }

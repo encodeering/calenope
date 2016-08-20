@@ -1,25 +1,16 @@
 package de.synyx.calenope.organizer.ui
 
-import android.accounts.AccountManager
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import de.synyx.calenope.organizer.Action
+import de.synyx.calenope.organizer.R
 
 /**
  * @author clausen - clausen@synyx.de
  */
 class Main : AppCompatActivity () {
-
-    companion object {
-        private val REQUEST_ACCOUNT_PICKER = 1000
-
-        private val PREF_ACCOUNT_NAME = "account-name"
-    }
 
     override fun onCreate (savedInstanceState : Bundle?) {
         super.onCreate    (savedInstanceState)
@@ -33,33 +24,14 @@ class Main : AppCompatActivity () {
         update ()
     }
 
-    override fun onActivityResult (requestcode : Int, resultcode : Int, data : Intent?) {
-        super.onActivityResult    (requestcode,       resultcode,       data)
-
-        when (requestcode) {
-            REQUEST_ACCOUNT_PICKER ->
-                if (resultcode == Activity.RESULT_OK && data != null && data.extras != null) {
-                    val name = data.getStringExtra (AccountManager.KEY_ACCOUNT_NAME)
-                    if (name != null) {
-                        val settings = getPreferences (Context.MODE_PRIVATE)
-                        val editor = settings.edit ()
-                            editor.putString (PREF_ACCOUNT_NAME, name)
-                            editor.apply ()
-                    }
-
-                    update ()
-                }
-        }
-    }
-
     private fun update () = authenticate { Application.store ().dispatch (it) }
 
     private fun user         (name : String?) = GoogleAccountManager (this).getAccountByName (name)
 
-    private fun authenticate (name : String? = getPreferences (Context.MODE_PRIVATE).getString (PREF_ACCOUNT_NAME, null), success : (Action<*>) -> Unit = {}) {
+    private fun authenticate (name : String? = getSharedPreferences ("organizer-settings", Context.MODE_PRIVATE).getString (getString (R.string.account), ""), success : (Action<*>) -> Unit = {}) {
         val   account = user (name)
         when (account) {
-            null -> startActivityForResult (AccountPicker.newChooseAccountIntent (null, null, arrayOf (GoogleAccountManager.ACCOUNT_TYPE), true, null, null, null, null), REQUEST_ACCOUNT_PICKER)
+            null -> Unit
             else -> success (Action.SelectAccount (name!!))
         }
     }
