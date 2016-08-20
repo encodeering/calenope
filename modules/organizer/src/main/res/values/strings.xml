@@ -4,4 +4,5 @@
     <string name="update">Update</string>
     <string name="account">account</string>
     <string name="account_default">""</string>
+    <string name="save_error">Couldn\'t save information</string>
 </resources>

@@ -10,6 +10,9 @@ interface Action<out T> {
 
     val payload : T
 
+    class Synchronize (private val state : State = State.Default ()) : Action<State>
+        by Simple (state)
+
     class UpdateOverview (private val calendars : Collection<String> = emptyList ()) : Action<Collection<String>>
         by Simple (calendars)
 

@@ -52,6 +52,7 @@ dependencies {
     compile 'com.android.support:design:23.4.0'
     compile 'com.github.alamkanak:android-week-view:1.2.6'
     compile 'com.google.android.gms:play-services-auth:9.2.1'
+    compile 'com.google.code.gson:gson:2.7'
     compile "com.github.trikita:jedux:80389e2"
     compile 'co.trikita:anvil-sdk19:0.4.0'
     compile 'co.trikita:anvil-appcompat-v7:0.4.0'
