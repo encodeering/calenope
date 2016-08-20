@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference android:title="@string/account"
+                android:key="@string/account"
+                android:defaultValue="@string/account_default"
+                android:persistent="true"
+                android:inputType="text" />
+
+</PreferenceScreen>
