@@ -99,14 +99,14 @@ class MainLayout (private val main : Main) : RenderableView (main) {
             linearLayout {
                 layoutParams (scrolling)
 
-            gridView {
-                size (FILL, FILL)
-                adapter (tiles)
-                numColumns (2)
-                horizontalSpacing (dip (0))
-                verticalSpacing   (dip (0))
-                onItemClick { adapter, view, position, id -> main.onOverviewClick (adapter.getItemAtPosition(position) as String? ?: "") } // TODO should be changed to a dispatch action later
-            }
+                gridView {
+                    size (FILL, FILL)
+                    adapter (tiles)
+                    numColumns (2)
+                    horizontalSpacing (dip (0))
+                    verticalSpacing   (dip (0))
+                    onItemClick { adapter, view, position, id -> main.onOverviewClick (adapter.getItemAtPosition(position) as String? ?: "") } // TODO should be changed to a dispatch action later
+                }
             }
         }
     }
