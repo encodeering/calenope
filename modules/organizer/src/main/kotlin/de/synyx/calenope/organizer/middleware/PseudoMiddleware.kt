@@ -28,7 +28,11 @@ class PseudoMiddleware (private val application : Application) : Middleware {
 
     }
 
-    private var board : Board? = null
+    private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
+        if (next == previous) return@observable
+
+        fire (Action.UpdateOverview ())
+    }
 
     private var account : String by Delegates.observable ("") { property, previous, next ->
         if (next == previous) return@observable
