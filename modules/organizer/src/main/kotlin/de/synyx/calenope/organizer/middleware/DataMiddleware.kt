@@ -47,9 +47,17 @@ class DataMiddleware (private val context : Context) : Middleware {
         store.save ()
     }
 
+    private fun SharedPreferences.getString (id : Int, default : String? = null) : String {
+        return this.getString (property     (id),      default)
+    }
+
+    private fun SharedPreferences.load () : State.Setting {
+        return State.Setting (account = settings.getString (R.string.account, null))
+    }
+
     private fun Store<Action<*>, State>.load () : State {
         try {
-            return gson.fromJson (this@DataMiddleware.state.getString (DATA, ""), State.Default::class.java)
+            return gson.fromJson (this@DataMiddleware.state.getString (DATA, ""), State.Default::class.java).copy (setting = settings.load ())
         } catch (e : Exception) {
             return this.state
         }
