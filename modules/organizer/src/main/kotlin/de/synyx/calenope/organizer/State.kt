@@ -34,7 +34,6 @@ interface State {
         private fun setting  (action : Action<*>, previous : State) : Setting  =
             when (action) {
                 is Action.Synchronize   ->                                  action.payload.setting
-                is Action.SelectAccount -> previous.setting.copy (account = action.payload)
                 else                    -> previous.setting
             }
 

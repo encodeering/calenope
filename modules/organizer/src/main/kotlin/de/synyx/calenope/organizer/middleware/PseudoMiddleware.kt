@@ -1,6 +1,5 @@
 package de.synyx.calenope.organizer.middleware
 
-import android.accounts.Account
 import android.content.Intent
 import android.util.Log
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
@@ -19,6 +18,7 @@ import rx.schedulers.Schedulers
 import trikita.jedux.Store
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.properties.Delegates
 
 class PseudoMiddleware (private val application : Application) : Middleware {
 
@@ -30,28 +30,32 @@ class PseudoMiddleware (private val application : Application) : Middleware {
 
     private var board : Board? = null
 
+    private var account : String by Delegates.observable ("") { property, previous, next ->
+        if (next == previous) return@observable
+        if (next.isBlank ())  return@observable
+
+        val meta = mapOf (
+            "context" to application.applicationContext,
+            "account" to GoogleAccountManager (application).getAccountByName (next)
+        )
+
+        board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
+    }
+
     override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
         when (action) {
             is Action.UpdateOverview -> return calendars (Observers.create { calendars -> next.dispatch (Action.UpdateOverview(calendars)) })
             is Action.UpdateSetting  -> action.payload.startActivity (Intent (action.payload, Settings::class.java))
-            is Action.SelectAccount  -> login (GoogleAccountManager (application).getAccountByName (action.payload))
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
         }
 
         next.dispatch (action)
+
+        account = store.state.setting.account
     }
 
     private fun calendars (observer : Observer<Collection<String>>) {
         oauth { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (observer)
-    }
-
-    private fun login (account : Account) {
-        val meta = mapOf (
-            "context" to application.applicationContext,
-            "account" to account
-        )
-
-        board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.first ()!!
     }
 
     private fun <R> oauth (command : Board.() -> R) : Observable<R> {
