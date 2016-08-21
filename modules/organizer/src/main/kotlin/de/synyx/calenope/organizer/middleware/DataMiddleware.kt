@@ -1,6 +1,7 @@
 package de.synyx.calenope.organizer.middleware
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.widget.Toast
 import com.google.gson.GsonBuilder
 import de.synyx.calenope.organizer.Action
@@ -23,6 +24,19 @@ class DataMiddleware (private val context : Context) : Middleware {
 
     private val state
         by lazy { context.getSharedPreferences ("organizer-state", Context.MODE_PRIVATE) }
+
+    private val settings
+        by lazy { context.getSharedPreferences ("organizer-settings", Context.MODE_PRIVATE) }
+
+    private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
+        when (key) {
+            property (R.string.account) -> fire (Action.Synchronize ())
+        }
+    }
+
+    init {
+        settings.registerOnSharedPreferenceChangeListener (settingsupdate)
+    }
 
     override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
         when (action) {
@@ -48,6 +62,8 @@ class DataMiddleware (private val context : Context) : Middleware {
             toast (R.string.save_error)
         }
     }
+
+    private fun property (i : Int) = context.getString (i)
 
     private fun toast (message : Int) {
         Toast.makeText (context, message, Toast.LENGTH_LONG).show ()
