@@ -12,7 +12,7 @@ import trikita.jedux.Store
  * @author clausen - clausen@synyx.de
  */
 
-class DataMiddleware (private val context : Context) : Store.Middleware<Action<*>, State> {
+class DataMiddleware (private val context : Context) : Middleware {
 
     companion object {
         private val DATA = "data"

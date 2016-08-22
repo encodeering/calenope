@@ -20,7 +20,7 @@ import trikita.jedux.Store
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class PseudoMiddleware (private val application : Application) : Store.Middleware<Action<*>, State> {
+class PseudoMiddleware (private val application : Application) : Middleware {
 
     companion object {
 
