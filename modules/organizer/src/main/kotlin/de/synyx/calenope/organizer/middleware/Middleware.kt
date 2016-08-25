@@ -15,9 +15,9 @@ import java.util.concurrent.TimeUnit
 
 interface Middleware : Store.Middleware<Action<*>, State> {
 
-    fun fire (action : Action<*>) = observable (0).subscribe { Application.store ().dispatch (action) }
+    fun fire (action : Action<*>) = observable (0).eventloop ().subscribe { Application.store ().dispatch (action) }
 
-    fun observable (delay : Long) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ()).eventloop ()
+    fun observable (delay : Long) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ())
 
 }
 
