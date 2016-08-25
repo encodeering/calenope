@@ -59,7 +59,7 @@ class PseudoMiddleware (private val application : Application) : Middleware {
     }
 
     private fun calendars (observer : Observer<Collection<String>>) {
-        oauth (emptyList<String> ()) { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (observer)
+        oauth (emptyList<String> ()) { all ().map { it.id () } }.eventloop ().subscribe (observer)
     }
 
     private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {

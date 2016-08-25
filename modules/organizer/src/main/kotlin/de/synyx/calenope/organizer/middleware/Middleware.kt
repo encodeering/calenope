@@ -17,6 +17,8 @@ interface Middleware : Store.Middleware<Action<*>, State> {
 
     fun fire (action : Action<*>) = observable (0).subscribe { Application.store ().dispatch (action) }
 
-    fun observable (delay : Long) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ()).observeOn (AndroidSchedulers.mainThread ())
+    fun observable (delay : Long) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ()).eventloop ()
 
 }
+
+fun <T> Observable<T>.eventloop () = this.observeOn (AndroidSchedulers.mainThread ())
