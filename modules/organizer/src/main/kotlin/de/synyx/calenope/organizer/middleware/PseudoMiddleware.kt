@@ -59,10 +59,10 @@ class PseudoMiddleware (private val application : Application) : Middleware {
     }
 
     private fun calendars (observer : Observer<Collection<String>>) {
-        oauth { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (observer)
+        oauth (emptyList<String> ()) { all ().map { it.id () } }.observeOn (AndroidSchedulers.mainThread ()).subscribe (observer)
     }
 
-    private fun <R> oauth (command : Board.() -> R) : Observable<R> {
+    private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {
         return Observable.timer (0, TimeUnit.MILLISECONDS, Schedulers.io ()).map { command (board!!) }.onErrorResumeNext { e ->
             Log.e (PseudoMiddleware.TAG, e.message, e)
 
@@ -70,7 +70,9 @@ class PseudoMiddleware (private val application : Application) : Middleware {
                 is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
             }
 
-            Observable.empty<R> ()
+            if (default != null) Observable.just (default)
+            else
+                Observable.empty<R> ()
         }
     }
 
