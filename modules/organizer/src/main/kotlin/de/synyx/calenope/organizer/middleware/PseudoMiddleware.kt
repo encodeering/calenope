@@ -60,7 +60,7 @@ class PseudoMiddleware (private val application : Application) : Middleware {
     }
 
     private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {
-        return observable (0).map { command (board!!) }.onErrorResumeNext { e ->
+        return observable ().map { command (board!!) }.onErrorResumeNext { e ->
             Log.e (PseudoMiddleware.TAG, e.message, e)
 
             when (e) {
