@@ -98,7 +98,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     popupTheme (R.style.AppTheme_PopupOverlay)
 
                     button {
-                        text ("Setting")
+                        text ("Setting ${store.state.setting.account}")
                         onClick { store.dispatch (Action.UpdateSetting (main)) }
                     }
 
