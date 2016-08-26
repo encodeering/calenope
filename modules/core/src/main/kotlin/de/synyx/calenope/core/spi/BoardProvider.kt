@@ -8,6 +8,6 @@ import de.synyx.calenope.core.api.service.Board
 
 interface BoardProvider {
 
-    fun create (meta : Map<String, Any>, detector : (String) -> Boolean) : Board?
+    fun create (meta : Map<String, Any>) : Board?
 
 }

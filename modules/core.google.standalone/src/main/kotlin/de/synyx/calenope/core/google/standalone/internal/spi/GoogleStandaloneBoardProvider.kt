@@ -29,7 +29,7 @@ class GoogleStandaloneBoardProvider : BoardProvider {
 
     private val transport by lazy { GoogleNetHttpTransport.newTrustedTransport () }
 
-    override fun create (meta : Map<String, Any>, detector : (String) -> Boolean) : Board? {
+    override fun create (meta : Map<String, Any>) : Board? {
         val value =      meta["secret"]
 
         if (value !is Reader) return null
@@ -37,7 +37,7 @@ class GoogleStandaloneBoardProvider : BoardProvider {
         val secret = GoogleClientSecrets.load (GoogleApi.jackson (), value)
         val api    = GoogleApi (name, transport, credential (secret))
 
-        return GoogleBoard (api) { detector (it.resourceType ?: "unknown") }
+        return GoogleBoard (api)
     }
 
     private fun credential (secret : GoogleClientSecrets) : Credential {

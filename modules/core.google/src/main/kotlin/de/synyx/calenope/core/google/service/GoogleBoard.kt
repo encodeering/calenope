@@ -14,7 +14,7 @@ import java.util.*
 /**
  * @author clausen - clausen@synyx.de
  */
-class GoogleBoard constructor (api: GoogleApi, private val room: (CalendarResource) -> Boolean) : Board {
+class GoogleBoard constructor (api: GoogleApi) : Board {
 
     private val calendar  : com.google.api.services.calendar.Calendar
     private val directory : Directory
@@ -49,7 +49,7 @@ class GoogleBoard constructor (api: GoogleApi, private val room: (CalendarResour
                  token = calendars?.nextPageToken ?: null
         } while (token != null)
 
-        return resources.filter (room).map { MemoryCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
+        return resources.map { MemoryCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
     }
 
     protected fun byCalendar (): Collection<Calendar> {

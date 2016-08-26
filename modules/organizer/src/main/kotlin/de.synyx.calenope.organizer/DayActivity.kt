@@ -130,7 +130,7 @@ class DayActivity : AppCompatActivity () {
                 "account" to account!!
             )
 
-            board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta, { "Besprechungsraum" == it }) }.first()!!
+            board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.first()!!
         }
 
         private val data : List<String>

@@ -26,7 +26,7 @@ object GoogleStandaloneBoardSample {
     private fun board(filename : String) : Board {
         val stream = Files.newInputStream (Paths.get (filename))
 
-        return ServiceLoader.load (BoardProvider::class.java).map { it.create (mapOf ("secret" to InputStreamReader (stream)), { "Besprechungsraum" == it }) }.first()!!
+        return ServiceLoader.load (BoardProvider::class.java).map { it.create (mapOf ("secret" to InputStreamReader (stream))) }.first()!!
     }
 
 }
