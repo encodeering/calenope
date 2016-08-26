@@ -28,10 +28,6 @@ class GoogleBoard constructor (api: GoogleApi) : Board {
         return byCalendar () + byDirectory ()
     }
 
-    override fun room (name: String) : Calendar? {
-        return byDirectory ().filter { c -> c.id () == name }.firstOrNull ()
-    }
-
     protected fun byDirectory () : Collection<Calendar> {
         val list = directory.resources ().calendars ().list ("my_customer")
 
