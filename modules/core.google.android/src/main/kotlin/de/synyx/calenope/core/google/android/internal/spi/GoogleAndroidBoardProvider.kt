@@ -26,7 +26,7 @@ class GoogleAndroidBoardProvider : BoardProvider {
 
     private val transport by lazy { AndroidHttp.newCompatibleTransport () }
 
-    override fun create (meta : Map<String, Any>, detector : (String) -> Boolean) : Board? {
+    override fun create (meta : Map<String, Any>) : Board? {
         val context =    meta["context"]
         val account =    meta["account"]
 
@@ -35,7 +35,7 @@ class GoogleAndroidBoardProvider : BoardProvider {
 
         val api = GoogleApi (name, transport, credential (context, account))
 
-        return GoogleBoard (api) { detector (it.resourceType ?: "unknown") }
+        return GoogleBoard (api)
     }
 
     private fun credential (context : Context, account : Account) : HttpRequestInitializer {
