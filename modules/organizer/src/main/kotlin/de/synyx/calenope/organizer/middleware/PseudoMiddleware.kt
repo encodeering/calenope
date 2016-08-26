@@ -11,8 +11,6 @@ import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.ui.Application
 import de.synyx.calenope.organizer.ui.Settings
 import rx.Observable
-import rx.Observer
-import rx.observers.Observers
 import trikita.jedux.Store
 import java.util.*
 import kotlin.properties.Delegates
@@ -45,7 +43,10 @@ class PseudoMiddleware (private val application : Application) : Middleware {
 
     override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
         when (action) {
-            is Action.UpdateOverview -> return calendars (Observers.create { calendars -> next.dispatch (Action.UpdateOverview(calendars)) })
+            is Action.UpdateOverview -> {
+                                              next.dispatch (Action.UpdateOverview (emptyList ()))
+                return request { calendars -> next.dispatch (Action.UpdateOverview (calendars)) }
+            }
             is Action.UpdateSetting  -> action.payload.startActivity (Intent (action.payload, Settings::class.java))
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
         }
@@ -55,7 +56,7 @@ class PseudoMiddleware (private val application : Application) : Middleware {
         account = store.state.setting.account
     }
 
-    private fun calendars (observer : Observer<Collection<String>>) {
+    private fun request (observer : (Collection<String>) -> Unit) {
         oauth (emptyList<String> ()) { all ().map { it.id () } }.eventloop ().subscribe (observer)
     }
 
