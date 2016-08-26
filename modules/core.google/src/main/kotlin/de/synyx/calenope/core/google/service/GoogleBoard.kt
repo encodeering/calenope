@@ -1,12 +1,13 @@
 package de.synyx.calenope.core.google.service
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.services.admin.directory.Directory
 import com.google.api.services.admin.directory.model.CalendarResource
 import com.google.api.services.calendar.model.CalendarListEntry
-import de.synyx.calenope.core.google.GoogleApi
 import de.synyx.calenope.core.api.model.Calendar
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.api.service.Query
+import de.synyx.calenope.core.google.GoogleApi
 import de.synyx.calenope.core.std.model.MemoryCalendar
 import java.util.*
 
@@ -39,11 +40,13 @@ class GoogleBoard constructor (api: GoogleApi, private val room: (CalendarResour
         var token: String? = null
 
         do {
-            val calendars = list.setPageToken (token).execute ()
+            val calendars = tryremote (list.setPageToken (token)) {
+                execute ()
+            }
 
-            resources += calendars.items
+            resources += calendars?.items ?: emptyList ()
 
-                 token = calendars.nextPageToken
+                 token = calendars?.nextPageToken ?: null
         } while (token != null)
 
         return resources.filter (room).map { MemoryCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
@@ -57,16 +60,30 @@ class GoogleBoard constructor (api: GoogleApi, private val room: (CalendarResour
         var token: String? = null
 
         do {
-            val calendars = list.setPageToken (token).execute ()
+            val calendars = tryremote (list.setPageToken (token)) {
+                execute ()
+            }
 
-            resources += calendars.items
+            resources += calendars?.items ?: emptyList ()
 
-                 token = calendars.nextPageToken
+                 token = calendars?.nextPageToken ?: null
         } while (token != null)
 
         return resources.map { MemoryCalendar (id = it.id, query = query (it.id)) }
     }
 
     private fun query (name: String): Query = GoogleQuery { calendar.events ().list (name) }
+
+    private fun <T, R> tryremote (receiver : T, action : T.() -> R) : R? {
+        return try {
+            action (receiver)
+        } catch  (e : Exception) {
+            when (e) {
+                is GoogleJsonResponseException -> if (e.statusCode == 404) return@tryremote null
+            }
+
+            throw e
+        }
+    }
 
 }
