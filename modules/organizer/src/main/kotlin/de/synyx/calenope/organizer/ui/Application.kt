@@ -2,9 +2,12 @@ package de.synyx.calenope.organizer.ui
 
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
+import de.synyx.calenope.organizer.debuggable
 import de.synyx.calenope.organizer.middleware.DataMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
+import de.synyx.calenope.organizer.middleware.NoopMiddleware
 import trikita.anvil.Anvil
+import trikita.jedux.Logger
 import trikita.jedux.Store
 import android.app.Application as Android
 
@@ -15,6 +18,8 @@ import android.app.Application as Android
 class Application () : Android () {
 
     companion object {
+
+        private val TAG = Application::class.java.name
 
         private var self : Application? = null
 
@@ -29,7 +34,7 @@ class Application () : Android () {
 
         Application.self = this
 
-        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), DataMiddleware (this))
+        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
         store?.subscribe { Anvil.render () }
 
         store?.dispatch (Action.Synchronize ())
