@@ -19,8 +19,8 @@ class Main : AppCompatActivity () {
         private val PERMISSION = 1000
     }
 
-    override fun onCreate (savedInstanceState : Bundle?) {
-        super.onCreate    (savedInstanceState)
+    override fun onCreate (bundle : Bundle?) {
+        super.onCreate    (bundle)
 
         setContentView (MainLayout (this))
     }
