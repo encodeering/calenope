@@ -3,7 +3,7 @@ package de.synyx.calenope.organizer.ui
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.middleware.DataMiddleware
-import de.synyx.calenope.organizer.middleware.PseudoMiddleware
+import de.synyx.calenope.organizer.middleware.GoogleMiddleware
 import trikita.anvil.Anvil
 import trikita.jedux.Store
 import android.app.Application as Android
@@ -29,7 +29,7 @@ class Application () : Android () {
 
         Application.self = this
 
-        store = Store (State.Reducer, State.Default (), PseudoMiddleware (this), DataMiddleware (this))
+        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), DataMiddleware (this))
         store?.subscribe { Anvil.render () }
 
         store?.dispatch (Action.Synchronize ())

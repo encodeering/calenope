@@ -15,11 +15,11 @@ import trikita.jedux.Store
 import java.util.*
 import kotlin.properties.Delegates
 
-class PseudoMiddleware (private val application : Application) : Middleware {
+class GoogleMiddleware(private val application : Application) : Middleware {
 
     companion object {
 
-        private val TAG = PseudoMiddleware::class.java.name
+        private val TAG = GoogleMiddleware::class.java.name
 
     }
 
@@ -62,7 +62,7 @@ class PseudoMiddleware (private val application : Application) : Middleware {
 
     private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {
         return delay { command (board!!) }.onErrorResumeNext { e ->
-            Log.e (PseudoMiddleware.TAG, e.message, e)
+            Log.e (GoogleMiddleware.TAG, e.message, e)
 
             when (e) {
                 is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
