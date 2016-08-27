@@ -23,11 +23,11 @@ class Application () : Android () {
 
         private var self : Application? = null
 
-        fun store () : Store<Action<*>, State> = self!!.store!!
+        fun store () : Store<Action, State> = self!!.store!!
 
     }
 
-    private var store : Store<Action<*>, State>? = null
+    private var store : Store<Action, State>? = null
 
     override fun onCreate () {
         super.onCreate ()

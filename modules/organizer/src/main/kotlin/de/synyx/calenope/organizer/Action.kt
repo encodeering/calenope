@@ -5,23 +5,14 @@ import android.content.Context
 /**
  * @author clausen - clausen@synyx.de
  */
+interface Action {
 
-interface Action<out T> {
+    data class Synchronize    (val state : State = State.Default ()) : Action
 
-    val payload : T
+    data class UpdateOverview (val calendars : Collection<String> = emptyList ()) : Action
 
-    class Synchronize (private val state : State = State.Default ()) : Action<State>
-        by Simple (state)
+    data class UpdateSetting  (val context : Context) : Action
 
-    class UpdateOverview (private val calendars : Collection<String> = emptyList ()) : Action<Collection<String>>
-        by Simple (calendars)
-
-    class UpdateSetting (private val context : Context) : Action<Context>
-        by Simple (context)
-
-    class SelectCalendar (private val name : String) : Action<String>
-        by Simple (name)
-
-    private class Simple<out T> (override val payload : T) : Action<T>
+    data class SelectCalendar (val name : String) : Action
 
 }

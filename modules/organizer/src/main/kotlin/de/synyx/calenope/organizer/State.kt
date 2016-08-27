@@ -23,24 +23,24 @@ interface State {
 
     data class Setting (val account : String = "")
 
-    companion object Reducer : Store.Reducer<Action<*>, State> {
+    companion object Reducer : Store.Reducer<Action, State> {
 
-        override fun reduce  (action : Action<*>, previous : State) : State =
+        override fun reduce  (action : Action, previous : State) : State =
             when (previous) {
                 is Default -> previous.copy (overview = overview (action, previous), setting = setting (action, previous))
                 else       -> previous
             }
 
-        private fun setting  (action : Action<*>, previous : State) : Setting  =
+        private fun setting  (action : Action, previous : State) : Setting  =
             when (action) {
-                is Action.Synchronize   ->                                  action.payload.setting
+                is Action.Synchronize   ->                                  action.state.setting
                 else                    -> previous.setting
             }
 
-        private fun overview (action : Action<*>, previous : State) : Overview =
+        private fun overview (action : Action, previous : State) : Overview =
             when (action) {
-                is Action.Synchronize   ->                                      action.payload.overview
-                is Action.UpdateOverview -> previous.overview.copy (calendars = action.payload)
+                is Action.Synchronize   ->                                      action.state.overview
+                is Action.UpdateOverview -> previous.overview.copy (calendars = action.calendars)
                 else                     -> previous.overview
             }
 

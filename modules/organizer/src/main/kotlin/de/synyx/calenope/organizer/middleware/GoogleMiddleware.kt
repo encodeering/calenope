@@ -41,14 +41,14 @@ class GoogleMiddleware(private val application : Application) : Middleware {
         board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
     }
 
-    override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
+    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
             is Action.UpdateOverview -> {
                                               next.dispatch (Action.UpdateOverview (emptyList ()))
                 return request { calendars -> next.dispatch (Action.UpdateOverview (calendars)) }
             }
-            is Action.UpdateSetting  -> action.payload.startActivity (Intent (action.payload, Settings::class.java))
-            is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
+            is Action.UpdateSetting  -> action.context.startActivity (Intent (action.context, Settings::class.java))
+            is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
         }
 
         next.dispatch (action)
