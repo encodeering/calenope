@@ -45,12 +45,12 @@ class GoogleMiddleware(private val application : Application) : Middleware {
     override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
             is Action.SynchronizeAccount -> {
-                                              next.dispatch (action.copy (emptyList ()))
-                return request { calendars -> next.dispatch (action.copy (calendars)) }
+                                   next.dispatch (action.copy (emptyList ()))
+                return calendars { next.dispatch (action.copy (it)) }
             }
             is Action.SynchronizeCalendar -> {
-                                                                                           next.dispatch (action.copy (events = emptyList ()))
-                return events (store.state.overview.selection ?: "", action.key) { list -> next.dispatch (action.copy (events = list)) }
+                                                                                   next.dispatch (action.copy (events = emptyList ()))
+                return events (store.state.overview.selection ?: "", action.key) { next.dispatch (action.copy (events = it)) }
             }
         }
 
@@ -59,7 +59,7 @@ class GoogleMiddleware(private val application : Application) : Middleware {
         account = store.state.setting.account
     }
 
-    private fun request (observer : (Collection<String>) -> Unit) {
+    private fun calendars (observer : (Collection<String>) -> Unit) {
         oauth (emptyList<String> ()) { all ().map { it.id () } }.eventloop ().subscribe (observer)
     }
 
