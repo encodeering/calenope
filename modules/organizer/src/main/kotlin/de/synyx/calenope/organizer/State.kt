@@ -27,22 +27,23 @@ interface State {
 
         override fun reduce  (action : Action, previous : State) : State =
             when (previous) {
-                is Default -> previous.copy (overview = overview (action, previous.overview), setting = setting (action, previous.setting))
+                is Default -> previous.copy (overview = overview (action, previous.overview),
+                                             setting  = setting  (action, previous.setting))
                 else       -> previous
             }
 
         private fun setting  (action : Action, setting : State.Setting) : Setting  =
             when (action) {
-                is Action.Synchronize   ->                                  action.state.setting
-                else                    -> setting
+                is Action.Synchronize   -> action.state.setting
+                else                    ->              setting
             }
 
         private fun overview (action : Action, overview : State.Overview) : Overview =
             when (action) {
-                is Action.Synchronize   ->                                      action.state.overview
-                is Action.SynchronizeAccount -> overview.copy (calendars = action.calendars)
-                is Action.SelectCalendar -> overview.copy (selection = action.name)
-                else                     -> overview
+                is Action.Synchronize        -> action.state.overview
+                is Action.SynchronizeAccount ->              overview.copy (calendars = action.calendars)
+                is Action.SelectCalendar     ->              overview.copy (selection = action.name)
+                else                         ->              overview
             }
 
     }
