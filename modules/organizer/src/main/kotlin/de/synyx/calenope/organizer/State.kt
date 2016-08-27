@@ -41,6 +41,7 @@ interface State {
             when (action) {
                 is Action.Synchronize   ->                                      action.state.overview
                 is Action.UpdateOverview -> previous.overview.copy (calendars = action.calendars)
+                is Action.SelectCalendar -> previous.overview.copy (selection = action.name)
                 else                     -> previous.overview
             }
 
