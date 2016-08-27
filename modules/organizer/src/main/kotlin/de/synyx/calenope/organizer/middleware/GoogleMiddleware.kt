@@ -60,7 +60,9 @@ class GoogleMiddleware(private val application : Application) : Middleware {
     }
 
     private fun calendars (observer : (Collection<String>) -> Unit) {
-        oauth (emptyList<String> ()) { all ().map { it.id () } }.eventloop ().subscribe (observer)
+        oauth (observer, emptyList<String> ()) {
+            all ().map { it.id () }
+        }
     }
 
     private fun events (calendar : String, start : Pair<Int, Int>, observer : (Collection<Event>) -> Unit) {
@@ -69,11 +71,13 @@ class GoogleMiddleware(private val application : Application) : Middleware {
         val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
         val to = from.plusMonths (1)
 
-        oauth (emptyList ()) { name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList () }.eventloop ().subscribe (observer)
+        oauth (observer, emptyList ()) {
+            name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList ()
+        }
     }
 
-    private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {
-        return delay { command (board!!) }.onErrorResumeNext { e ->
+    private fun <R> oauth (action : (R) -> Unit, default : R? = null, command : Board.() -> R) {
+        delay { command (board!!) }.onErrorResumeNext { e ->
             Log.e (GoogleMiddleware.TAG, e.message, e)
 
             when (e) {
@@ -83,7 +87,7 @@ class GoogleMiddleware(private val application : Application) : Middleware {
             if (default != null) Observable.just (default)
             else
                 Observable.empty<R> ()
-        }
+        }.eventloop ().subscribe (action)
     }
 
 }
