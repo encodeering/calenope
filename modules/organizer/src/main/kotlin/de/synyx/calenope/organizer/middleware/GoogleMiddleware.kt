@@ -4,11 +4,13 @@ import android.content.Intent
 import android.util.Log
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
+import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.ui.Application
+import org.joda.time.DateTime
 import rx.Observable
 import trikita.jedux.Store
 import java.util.*
@@ -47,6 +49,10 @@ class GoogleMiddleware(private val application : Application) : Middleware {
                 return request { calendars -> next.dispatch (Action.SynchronizeAccount (calendars)) }
             }
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
+            is Action.SynchronizeCalendar -> {
+                                                                                           next.dispatch (action.copy (events = emptyList ()))
+                return events (store.state.overview.selection ?: "", action.key) { list -> next.dispatch (action.copy (events = list)) }
+            }
         }
 
         next.dispatch (action)
@@ -56,6 +62,15 @@ class GoogleMiddleware(private val application : Application) : Middleware {
 
     private fun request (observer : (Collection<String>) -> Unit) {
         oauth (emptyList<String> ()) { all ().map { it.id () } }.eventloop ().subscribe (observer)
+    }
+
+    private fun events (calendar : String, start : Pair<Int, Int>, observer : (Collection<Event>) -> Unit) {
+        val yearmonth = DateTime ().withYear (start.first).withMonthOfYear (start.second)
+
+        val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
+        val to = from.plusMonths (1)
+
+        oauth (emptyList ()) { name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList () }.eventloop ().subscribe (observer)
     }
 
     private fun <R> oauth (default : R? = null, command : Board.() -> R) : Observable<R> {

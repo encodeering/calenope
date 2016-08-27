@@ -32,6 +32,11 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
 
     override fun view () {
         weekview ()
+        bind ()
+    }
+
+    private fun bind () {
+        events.onNext (store.state.events.map)
     }
 
     private fun weekview () {
