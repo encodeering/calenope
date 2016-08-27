@@ -1,27 +1,22 @@
 package de.synyx.calenope.organizer
 
 import android.content.Context
+import de.synyx.calenope.organizer.middleware.FlowMiddleware
+import de.synyx.calenope.organizer.ui.Settings
 
 /**
  * @author clausen - clausen@synyx.de
  */
+interface Action {
 
-interface Action<out T> {
+    data class Synchronize    (val state : State = State.Default ()) : Action
 
-    val payload : T
+    data class SynchronizeAccount (val calendars : Collection<String> = emptyList ()) : Action
 
-    class Synchronize (private val state : State = State.Default ()) : Action<State>
-        by Simple (state)
+    data class SelectCalendar (val name : String) : Action
 
-    class UpdateOverview (private val calendars : Collection<String> = emptyList ()) : Action<Collection<String>>
-        by Simple (calendars)
+    data class Open           (override val context : Context, override val screen : Class<out Context>) : FlowMiddleware.Open, Action
 
-    class UpdateSetting (private val context : Context) : Action<Context>
-        by Simple (context)
-
-    class SelectCalendar (private val name : String) : Action<String>
-        by Simple (name)
-
-    private class Simple<out T> (override val payload : T) : Action<T>
+    data class OpenSettings   (override val context : Context) : FlowMiddleware.Open by Open (context, Settings::class.java), Action
 
 }

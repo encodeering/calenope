@@ -10,6 +10,6 @@ import trikita.jedux.Store
 
 class NoopMiddleware : Middleware {
 
-    override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) = next.dispatch (action)
+    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) = next.dispatch (action)
 
 }

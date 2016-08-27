@@ -38,7 +38,7 @@ class DataMiddleware (private val context : Context) : Middleware {
         settings.registerOnSharedPreferenceChangeListener (settingsupdate)
     }
 
-    override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
+    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
             is Action.Synchronize -> next.dispatch (Action.Synchronize (store.load ()))
             else                  -> next.dispatch (action)
@@ -55,7 +55,7 @@ class DataMiddleware (private val context : Context) : Middleware {
         return State.Setting (account = settings.getString (R.string.account, null))
     }
 
-    private fun Store<Action<*>, State>.load () : State {
+    private fun Store<Action, State>.load () : State {
         try {
             return gson.fromJson (this@DataMiddleware.state.getString (DATA, ""), State.Default::class.java).copy (setting = settings.load ())
         } catch (e : Exception) {
@@ -63,7 +63,7 @@ class DataMiddleware (private val context : Context) : Middleware {
         }
     }
 
-    private fun Store<Action<*>, State>.save () {
+    private fun Store<Action, State>.save () {
         try {
             this@DataMiddleware.state.edit ().putString (DATA, gson.toJson (this.state)).commit ()
         } catch (e : Exception) {

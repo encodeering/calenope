@@ -23,25 +23,27 @@ interface State {
 
     data class Setting (val account : String = "")
 
-    companion object Reducer : Store.Reducer<Action<*>, State> {
+    companion object Reducer : Store.Reducer<Action, State> {
 
-        override fun reduce  (action : Action<*>, previous : State) : State =
+        override fun reduce  (action : Action, previous : State) : State =
             when (previous) {
-                is Default -> previous.copy (overview = overview (action, previous), setting = setting (action, previous))
+                is Default -> previous.copy (overview = overview (action, previous.overview),
+                                             setting  = setting  (action, previous.setting))
                 else       -> previous
             }
 
-        private fun setting  (action : Action<*>, previous : State) : Setting  =
+        private fun setting  (action : Action, setting : State.Setting) : Setting  =
             when (action) {
-                is Action.Synchronize   ->                                  action.payload.setting
-                else                    -> previous.setting
+                is Action.Synchronize   -> action.state.setting
+                else                    ->              setting
             }
 
-        private fun overview (action : Action<*>, previous : State) : Overview =
+        private fun overview (action : Action, overview : State.Overview) : Overview =
             when (action) {
-                is Action.Synchronize   ->                                      action.payload.overview
-                is Action.UpdateOverview -> previous.overview.copy (calendars = action.payload)
-                else                     -> previous.overview
+                is Action.Synchronize        -> action.state.overview
+                is Action.SynchronizeAccount ->              overview.copy (calendars = action.calendars)
+                is Action.SelectCalendar     ->              overview.copy (selection = action.name)
+                else                         ->              overview
             }
 
     }

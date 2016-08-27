@@ -9,7 +9,6 @@ import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.ui.Application
-import de.synyx.calenope.organizer.ui.Settings
 import rx.Observable
 import trikita.jedux.Store
 import java.util.*
@@ -26,7 +25,7 @@ class GoogleMiddleware(private val application : Application) : Middleware {
     private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
         if (next == previous) return@observable
 
-        fire (Action.UpdateOverview ())
+        fire (Action.SynchronizeAccount ())
     }
 
     private var account : String by Delegates.observable ("") { property, previous, next ->
@@ -41,14 +40,13 @@ class GoogleMiddleware(private val application : Application) : Middleware {
         board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
     }
 
-    override fun dispatch (store : Store<Action<*>, State>, action : Action<*>, next : Store.NextDispatcher<Action<*>>) {
+    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
-            is Action.UpdateOverview -> {
-                                              next.dispatch (Action.UpdateOverview (emptyList ()))
-                return request { calendars -> next.dispatch (Action.UpdateOverview (calendars)) }
+            is Action.SynchronizeAccount -> {
+                                              next.dispatch (Action.SynchronizeAccount (emptyList ()))
+                return request { calendars -> next.dispatch (Action.SynchronizeAccount (calendars)) }
             }
-            is Action.UpdateSetting  -> action.payload.startActivity (Intent (action.payload, Settings::class.java))
-            is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.payload}")
+            is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
         }
 
         next.dispatch (action)
