@@ -43,7 +43,7 @@ class GoogleQuery(private val events: () -> List) : Query {
     private fun convert (e: com.google.api.services.calendar.model.Event): Event {
         return MemoryEvent (
                 id          = e.id,
-                title       = e.summary,
+                title       = e.summary ?: "",
                 location    = e.location,
                 description = e.description,
                 start       = instant   (e.start),
