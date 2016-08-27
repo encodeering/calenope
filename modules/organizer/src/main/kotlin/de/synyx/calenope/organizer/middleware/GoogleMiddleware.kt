@@ -48,7 +48,6 @@ class GoogleMiddleware(private val application : Application) : Middleware {
                                               next.dispatch (Action.SynchronizeAccount (emptyList ()))
                 return request { calendars -> next.dispatch (Action.SynchronizeAccount (calendars)) }
             }
-            is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
             is Action.SynchronizeCalendar -> {
                                                                                            next.dispatch (action.copy (events = emptyList ()))
                 return events (store.state.overview.selection ?: "", action.key) { list -> next.dispatch (action.copy (events = list)) }
