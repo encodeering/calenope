@@ -25,7 +25,7 @@ class GoogleMiddleware(private val application : Application) : Middleware {
     private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
         if (next == previous) return@observable
 
-        fire (Action.UpdateOverview ())
+        fire (Action.SynchronizeAccount ())
     }
 
     private var account : String by Delegates.observable ("") { property, previous, next ->
@@ -42,9 +42,9 @@ class GoogleMiddleware(private val application : Application) : Middleware {
 
     override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
-            is Action.UpdateOverview -> {
-                                              next.dispatch (Action.UpdateOverview (emptyList ()))
-                return request { calendars -> next.dispatch (Action.UpdateOverview (calendars)) }
+            is Action.SynchronizeAccount -> {
+                                              next.dispatch (Action.SynchronizeAccount (emptyList ()))
+                return request { calendars -> next.dispatch (Action.SynchronizeAccount (calendars)) }
             }
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
         }

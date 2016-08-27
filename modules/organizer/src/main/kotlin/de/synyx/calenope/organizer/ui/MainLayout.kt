@@ -104,7 +104,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
                     button {
                         text ("Update")
-                        onClick { store.dispatch (Action.UpdateOverview ()) }
+                        onClick { store.dispatch (Action.SynchronizeAccount ()) }
                     }
                 }
             }
