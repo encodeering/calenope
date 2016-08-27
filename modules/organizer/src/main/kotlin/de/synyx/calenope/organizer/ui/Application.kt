@@ -4,6 +4,7 @@ import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.debuggable
 import de.synyx.calenope.organizer.middleware.DataMiddleware
+import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
 import de.synyx.calenope.organizer.middleware.NoopMiddleware
 import trikita.anvil.Anvil
@@ -34,7 +35,7 @@ class Application () : Android () {
 
         Application.self = this
 
-        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
+        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
         store?.subscribe { Anvil.render () }
 
         store?.dispatch (Action.Synchronize ())
