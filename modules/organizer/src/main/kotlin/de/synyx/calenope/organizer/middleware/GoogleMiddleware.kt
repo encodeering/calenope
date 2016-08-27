@@ -9,7 +9,6 @@ import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.ui.Application
-import de.synyx.calenope.organizer.ui.Settings
 import rx.Observable
 import trikita.jedux.Store
 import java.util.*
@@ -47,7 +46,6 @@ class GoogleMiddleware(private val application : Application) : Middleware {
                                               next.dispatch (Action.UpdateOverview (emptyList ()))
                 return request { calendars -> next.dispatch (Action.UpdateOverview (calendars)) }
             }
-            is Action.UpdateSetting  -> action.context.startActivity (Intent (action.context, Settings::class.java))
             is Action.SelectCalendar -> Log.d (TAG, "Clicked on ${action.name}")
         }
 

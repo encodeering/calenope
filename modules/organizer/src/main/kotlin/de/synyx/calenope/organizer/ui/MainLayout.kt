@@ -99,7 +99,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
                     button {
                         text ("Setting ${store.state.setting.account}")
-                        onClick { store.dispatch (Action.UpdateSetting (main)) }
+                        onClick { store.dispatch (Action.OpenSettings (main)) }
                     }
 
                     button {
