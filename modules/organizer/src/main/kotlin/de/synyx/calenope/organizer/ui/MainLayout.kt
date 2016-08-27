@@ -118,7 +118,12 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     numColumns (2)
                     horizontalSpacing (dip (0))
                     verticalSpacing   (dip (0))
-                    onItemClick { adapter, view, position, id -> store.dispatch (Action.SelectCalendar (adapter.getItemAtPosition(position) as String? ?: "")) }
+                    onItemClick { adapter, view, position, id ->
+                        run {
+                            store.dispatch (Action.SelectCalendar (adapter.getItemAtPosition (position) as String? ?: ""))
+                            store.dispatch (Action.OpenWeekview (main))
+                        }
+                    }
                 }
             }
         }
