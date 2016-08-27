@@ -40,7 +40,7 @@ class DataMiddleware (private val context : Context) : Middleware {
 
     override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
-            is Action.Synchronize -> next.dispatch (Action.Synchronize (store.load ()))
+            is Action.Synchronize -> next.dispatch (action.copy (store.load ()))
             else                  -> next.dispatch (action)
         }
 

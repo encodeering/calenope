@@ -45,8 +45,8 @@ class GoogleMiddleware(private val application : Application) : Middleware {
     override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
         when (action) {
             is Action.SynchronizeAccount -> {
-                                              next.dispatch (Action.SynchronizeAccount (emptyList ()))
-                return request { calendars -> next.dispatch (Action.SynchronizeAccount (calendars)) }
+                                              next.dispatch (action.copy (emptyList ()))
+                return request { calendars -> next.dispatch (action.copy (calendars)) }
             }
             is Action.SynchronizeCalendar -> {
                                                                                            next.dispatch (action.copy (events = emptyList ()))
