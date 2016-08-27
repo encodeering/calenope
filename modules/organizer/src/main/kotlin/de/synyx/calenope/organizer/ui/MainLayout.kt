@@ -55,8 +55,8 @@ class MainLayout (private val main : Main) : RenderableView (main) {
     }
 
     override fun view () {
-        bind ()
         overview ()
+        bind ()
     }
 
     private val tiles : RxRenderableAdapter<String> by lazy {
