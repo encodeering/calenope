@@ -8,6 +8,7 @@ import com.alamkanak.weekview.WeekViewEvent
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.component.donut
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
@@ -16,9 +17,10 @@ import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.DSL
 import trikita.anvil.DSL.init
-import trikita.anvil.DSL.linearLayout
+import trikita.anvil.DSL.relativeLayout
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
+import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableView
 import trikita.jedux.Store
 import java.util.*
@@ -42,8 +44,12 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
     }
 
     private fun weekview () {
-        linearLayout {
+        relativeLayout {
             size (MATCH, MATCH)
+
+            donut {
+                visibility (store.state.events.synchronizing)
+            }
 
             v (WeekView::class.java) {
                 init {

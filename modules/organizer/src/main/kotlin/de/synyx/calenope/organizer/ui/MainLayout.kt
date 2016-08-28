@@ -7,6 +7,7 @@ import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.component.donut
 import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.FILL
@@ -20,7 +21,6 @@ import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.gridView
 import trikita.anvil.DSL.horizontalSpacing
 import trikita.anvil.DSL.layoutParams
-import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.numColumns
 import trikita.anvil.DSL.onClick
@@ -34,6 +34,7 @@ import trikita.anvil.DSL.textColor
 import trikita.anvil.DSL.textSize
 import trikita.anvil.DSL.textView
 import trikita.anvil.DSL.verticalSpacing
+import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableAdapter
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
@@ -110,8 +111,12 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 }
             }
 
-            linearLayout {
+            relativeLayout {
                 layoutParams (scrolling)
+
+                donut {
+                    visibility (store.state.overview.synchronizing)
+                }
 
                 gridView {
                     size (FILL, FILL)

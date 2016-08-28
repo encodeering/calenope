@@ -22,7 +22,8 @@ interface State {
 
     data class Overview (
         val calendars : Collection<String> = emptyList (),
-        val selection : String? = null
+        val selection : String? = null,
+        val synchronizing : Boolean = false
     )
 
     data class Setting (
@@ -30,7 +31,8 @@ interface State {
     )
 
     data class Events  (
-        @Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap ()
+        @Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap (),
+                   val synchronizing : Boolean = false
     )
 
     companion object Reducer : Store.Reducer<Action, State> {
@@ -46,7 +48,7 @@ interface State {
         private fun events   (action : Action, events : State.Events) : Events =
             when (action) {
                 is Action.Synchronize       -> action.state.events
-                is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, action.events)))
+                is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, action.events)), synchronizing = action.synchronizing)
                 is Action.SelectCalendar    ->              events.copy (map = emptyMap ())
                 else                        ->              events
             }
@@ -60,7 +62,7 @@ interface State {
         private fun overview (action : Action, overview : State.Overview) : Overview =
             when (action) {
                 is Action.Synchronize        -> action.state.overview
-                is Action.SynchronizeAccount ->              overview.copy (calendars = action.calendars)
+                is Action.SynchronizeAccount ->              overview.copy (calendars = action.calendars, synchronizing = action.synchronizing)
                 is Action.SelectCalendar     ->              overview.copy (selection = action.name)
                 else                         ->              overview
             }

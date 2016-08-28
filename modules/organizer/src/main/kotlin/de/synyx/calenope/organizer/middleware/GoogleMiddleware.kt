@@ -8,8 +8,8 @@ import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
-import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.State
 import org.joda.time.DateTime
 import rx.Observable
 import trikita.jedux.Store
@@ -46,11 +46,11 @@ class GoogleMiddleware(private val application : Application) : Middleware {
         when (action) {
             is Action.SynchronizeAccount -> {
                                    next.dispatch (action.copy (emptyList ()))
-                return calendars { next.dispatch (action.copy (it)) }
+                return calendars { next.dispatch (action.copy (it, synchronizing = false)) }
             }
             is Action.SynchronizeCalendar -> {
                                                                                    next.dispatch (action.copy (events = emptyList ()))
-                return events (store.state.overview.selection ?: "", action.key) { next.dispatch (action.copy (events = it)) }
+                return events (store.state.overview.selection ?: "", action.key) { next.dispatch (action.copy (events = it, synchronizing = false)) }
             }
         }
 
