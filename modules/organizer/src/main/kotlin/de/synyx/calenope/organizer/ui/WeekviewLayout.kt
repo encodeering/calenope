@@ -20,6 +20,7 @@ import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
 import trikita.anvil.RenderableView
+import trikita.jedux.Store
 import java.util.*
 
 /**
@@ -48,7 +49,7 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
                 init {
                     val week = Anvil.currentView<WeekView> ()
 
-                    events = MonthLoaderAdapter<Event> (week)
+                    events = MonthLoaderAdapter<Event> (week, store)
 
                         week.monthChangeListener         = events
                         week.numberOfVisibleDays         = 1
@@ -69,7 +70,7 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
         }
     }
 
-    private inner class MonthLoaderAdapter<V : Event> (private val week : WeekView) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Collection<V>>> {
+    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Store<Action, *>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Collection<V>>> {
 
         private val map : MutableMap<Pair<Int, Int>, Pair<Collection<V>, DateTime>> = mutableMapOf ()
 

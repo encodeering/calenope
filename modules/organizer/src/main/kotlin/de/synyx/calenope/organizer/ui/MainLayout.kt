@@ -130,7 +130,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
         }
     }
 
-    private inner class RxRenderableAdapter<T> (private val view : (value : T, position : Int) -> Unit) : RenderableAdapter (), Observer<Collection<T>> {
+    private class RxRenderableAdapter<T> (private val view : (value : T, position : Int) -> Unit) : RenderableAdapter (), Observer<Collection<T>> {
 
         private var last : Collection<T> = emptyList ()
 
