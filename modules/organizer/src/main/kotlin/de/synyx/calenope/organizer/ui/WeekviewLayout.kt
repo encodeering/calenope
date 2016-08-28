@@ -7,6 +7,7 @@ import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Action
+import de.synyx.calenope.organizer.Application
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes

@@ -9,7 +9,7 @@ import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
-import de.synyx.calenope.organizer.ui.Application
+import de.synyx.calenope.organizer.Application
 import org.joda.time.DateTime
 import rx.Observable
 import trikita.jedux.Store

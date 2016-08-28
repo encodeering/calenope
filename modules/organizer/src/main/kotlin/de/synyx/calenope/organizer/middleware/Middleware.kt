@@ -2,7 +2,7 @@ package de.synyx.calenope.organizer.middleware
 
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.State
-import de.synyx.calenope.organizer.ui.Application
+import de.synyx.calenope.organizer.Application
 import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers

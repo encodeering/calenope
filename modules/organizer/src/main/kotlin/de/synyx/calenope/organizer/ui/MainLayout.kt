@@ -5,6 +5,7 @@ import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Action
+import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
 import rx.Observer
 import trikita.anvil.Anvil

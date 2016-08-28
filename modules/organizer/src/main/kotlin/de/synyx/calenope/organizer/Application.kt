@@ -1,8 +1,5 @@
-package de.synyx.calenope.organizer.ui
+package de.synyx.calenope.organizer
 
-import de.synyx.calenope.organizer.Action
-import de.synyx.calenope.organizer.State
-import de.synyx.calenope.organizer.debuggable
 import de.synyx.calenope.organizer.middleware.DataMiddleware
 import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
@@ -16,7 +13,7 @@ import android.app.Application as Android
  * @author clausen - clausen@synyx.de
  */
 
-class Application () : Android () {
+class Application () : android.app.Application () {
 
     companion object {
 
@@ -33,9 +30,9 @@ class Application () : Android () {
     override fun onCreate () {
         super.onCreate ()
 
-        Application.self = this
+        self = this
 
-        store = Store (State.Reducer, State.Default (), GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
+        store = Store (State, State.Default (), GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
         store?.subscribe { Anvil.render () }
 
         store?.dispatch (Action.Synchronize ())
