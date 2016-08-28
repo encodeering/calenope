@@ -13,9 +13,9 @@ interface Action {
 
     data class Synchronize    (val state : State = State.Default ()) : Action
 
-    data class SynchronizeAccount (val calendars : Collection<String> = emptyList ()) : Action
+    data class SynchronizeAccount (val calendars : Collection<String> = emptyList (), val synchronizing : Boolean = true) : Action
 
-    data class SynchronizeCalendar (val year : Int, val month : Int, val events : Collection<Event> = emptyList ()) : Action {
+    data class SynchronizeCalendar (val year : Int, val month : Int, val events : Collection<Event> = emptyList (), val synchronizing : Boolean = true) : Action {
 
         val key :    Pair<Int, Int>
             get () = Pair (year, month)
