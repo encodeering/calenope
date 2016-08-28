@@ -1,13 +1,16 @@
 package de.synyx.calenope.organizer.ui
 
-import android.content.Context
 import android.graphics.Color
+import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CoordinatorLayout
+import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.component.donut
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -16,21 +19,34 @@ import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.DSL
+import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.init
+import trikita.anvil.DSL.layoutParams
+import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
 import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableView
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
+import trikita.anvil.design.DesignDSL.appBarLayout
+import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.jedux.Store
 import java.util.*
 
 /**
  * @author clausen - clausen@synyx.de
  */
-class WeekviewLayout (private val c : Context) : RenderableView (c) {
+class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview) {
 
     private val store by lazy { Application.store () }
+
+    private val scrolling by lazy {
+        val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
+            params.behavior = AppBarLayout.ScrollingViewBehavior ()
+            params
+    }
 
     private lateinit var events : MonthLoaderAdapter<Event>
 
@@ -44,7 +60,26 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
     }
 
     private fun weekview () {
+        coordinatorLayout {
+            size (MATCH, MATCH)
+            orientation (LinearLayout.VERTICAL)
+
+            appBarLayout {
+                size (MATCH, WRAP)
+
+                toolbar {
+                    init {
+                        weekview.setTheme (R.style.AppTheme_AppBarOverlay)
+                        weekview.setSupportActionBar (Anvil.currentView ())
+                    }
+
+                    popupTheme(R.style.AppTheme_PopupOverlay)
+                }
+            }
+
         relativeLayout {
+            layoutParams (scrolling)
+
             size (MATCH, MATCH)
 
             donut {
@@ -73,6 +108,7 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
                         week.todayBackgroundColor        = Color.parseColor ("#1848adff")
                 }
             }
+        }
         }
     }
 
