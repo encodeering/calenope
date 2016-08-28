@@ -25,9 +25,13 @@ interface State {
         val selection : String? = null
     )
 
-    data class Setting (val account : String = "")
+    data class Setting (
+        val account : String = ""
+    )
 
-    data class Events  (@Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap ())
+    data class Events  (
+        @Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap ()
+    )
 
     companion object Reducer : Store.Reducer<Action, State> {
 
