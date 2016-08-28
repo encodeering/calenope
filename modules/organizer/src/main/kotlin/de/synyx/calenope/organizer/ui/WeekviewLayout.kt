@@ -77,38 +77,38 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 }
             }
 
-        relativeLayout {
-            layoutParams (scrolling)
+            relativeLayout {
+                layoutParams (scrolling)
 
-            size (MATCH, MATCH)
+                size (MATCH, MATCH)
 
-            donut {
-                visibility (store.state.events.synchronizing)
-            }
+                donut {
+                    visibility (store.state.events.synchronizing)
+                }
 
-            v (WeekView::class.java) {
-                init {
-                    val week = Anvil.currentView<WeekView> ()
+                v (WeekView::class.java) {
+                    init {
+                        val week = Anvil.currentView<WeekView> ()
 
-                    events = MonthLoaderAdapter<Event> (week, store)
+                        events = MonthLoaderAdapter<Event> (week, store)
 
-                        week.monthChangeListener         = events
-                        week.numberOfVisibleDays         = 1
-                        week.columnGap                   = DSL.dip (8)
-                        week.hourHeight                  = DSL.dip (600)
-                        week.headerColumnPadding         = DSL.dip (8)
-                        week.headerRowPadding            = DSL.dip (12)
-                        week.textSize                    = DSL.sip (10)
-                        week.eventTextSize               = DSL.sip (10)
-                        week.eventTextColor              = Color.WHITE
-                        week.headerColumnTextColor       = Color.parseColor ("#8f000000")
-                        week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
-                        week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
-                        week.dayBackgroundColor          = Color.parseColor ("#05000000")
-                        week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                            week.monthChangeListener         = events
+                            week.numberOfVisibleDays         = 1
+                            week.columnGap                   = DSL.dip (8)
+                            week.hourHeight                  = DSL.dip (600)
+                            week.headerColumnPadding         = DSL.dip (8)
+                            week.headerRowPadding            = DSL.dip (12)
+                            week.textSize                    = DSL.sip (10)
+                            week.eventTextSize               = DSL.sip (10)
+                            week.eventTextColor              = Color.WHITE
+                            week.headerColumnTextColor       = Color.parseColor ("#8f000000")
+                            week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
+                            week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
+                            week.dayBackgroundColor          = Color.parseColor ("#05000000")
+                            week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                    }
                 }
             }
-        }
         }
     }
 
