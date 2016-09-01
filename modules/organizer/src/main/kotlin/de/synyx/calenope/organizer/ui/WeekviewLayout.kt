@@ -94,12 +94,12 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                             week.monthChangeListener         = events
                             week.numberOfVisibleDays         = 1
-                            week.columnGap                   = DSL.dip (8)
-                            week.hourHeight                  = DSL.dip (600)
-                            week.headerColumnPadding         = DSL.dip (8)
-                            week.headerRowPadding            = DSL.dip (12)
-                            week.textSize                    = DSL.sip (10)
-                            week.eventTextSize               = DSL.sip (10)
+                            week.columnGap                   = dip (8)
+                            week.hourHeight                  = dip (600)
+                            week.headerColumnPadding         = dip (8)
+                            week.headerRowPadding            = dip (12)
+                            week.textSize                    = sip (10)
+                            week.eventTextSize               = sip (10)
                             week.eventTextColor              = Color.WHITE
                             week.headerColumnTextColor       = Color.parseColor ("#8f000000")
                             week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
