@@ -32,7 +32,8 @@ interface State {
 
     data class Events  (
         @Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap (),
-                   val synchronizing : Boolean = false
+                   val synchronizing : Boolean = false,
+                   val name : String = ""
     )
 
     companion object Reducer : Store.Reducer<Action, State> {
@@ -49,7 +50,7 @@ interface State {
             when (action) {
                 is Action.Synchronize       -> action.state.events
                 is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, action.events)), synchronizing = action.synchronizing)
-                is Action.SelectCalendar    ->              events.copy (map = emptyMap ())
+                is Action.SelectCalendar    ->              events.copy (map = emptyMap (), name = action.name)
                 else                        ->              events
             }
 
