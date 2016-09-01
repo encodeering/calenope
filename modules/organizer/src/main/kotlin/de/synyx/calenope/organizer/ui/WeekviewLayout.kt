@@ -84,46 +84,46 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 expanded (false)
 
                 collapsingToolbarLayout {
-                size (MATCH, MATCH)
-
-                init {
-                    val layout = Anvil.currentView<CollapsingToolbarLayout> ()
-                    val params = layout.layoutParams as AppBarLayout.LayoutParams
-                        params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
-
-                    title (store.state.events.name)
-                    titleEnabled (true)
-
-                    expandedTitleColor      (Color.TRANSPARENT)
-                    collapsedTitleTextColor (Color.WHITE)
-                }
-
-                imageView {
-                    size (MATCH, WRAP)
+                    size (MATCH, MATCH)
 
                     init {
-                        val imageView = Anvil.currentView<ImageView> ()
-                        val params = imageView.layoutParams as CollapsingToolbarLayout.LayoutParams
-                            params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+                        val layout = Anvil.currentView<CollapsingToolbarLayout> ()
+                        val params = layout.layoutParams as AppBarLayout.LayoutParams
+                            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
+                        title (store.state.events.name)
+                        titleEnabled (true)
+
+                        expandedTitleColor      (Color.TRANSPARENT)
+                        collapsedTitleTextColor (Color.WHITE)
                     }
 
-                    imageResource (R.drawable.background)
-                    scaleType (ImageView.ScaleType.CENTER_CROP)
-                }
+                    imageView {
+                        size (MATCH, WRAP)
 
-                toolbar {
-                    size (MATCH, dip (56))
+                        init {
+                            val imageView = Anvil.currentView<ImageView> ()
+                            val params = imageView.layoutParams as CollapsingToolbarLayout.LayoutParams
+                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+                        }
 
-                    init {
-                        val toolbar = Anvil.currentView<Toolbar> ()
-                        val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
-                            params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
-
-                        weekview.setTheme (R.style.AppTheme_AppBarOverlay)
+                        imageResource (R.drawable.background)
+                        scaleType (ImageView.ScaleType.CENTER_CROP)
                     }
 
-                    popupTheme(R.style.AppTheme_PopupOverlay)
-                }
+                    toolbar {
+                        size (MATCH, dip (56))
+
+                        init {
+                            val toolbar = Anvil.currentView<Toolbar> ()
+                            val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
+                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
+
+                            weekview.setTheme (R.style.AppTheme_AppBarOverlay)
+                        }
+
+                        popupTheme(R.style.AppTheme_PopupOverlay)
+                    }
                 }
             }
 
