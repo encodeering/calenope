@@ -2,7 +2,10 @@ package de.synyx.calenope.organizer.ui
 
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CollapsingToolbarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.v7.widget.Toolbar
+import android.widget.ImageView
 import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
@@ -18,20 +21,31 @@ import org.joda.time.Minutes
 import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
+import trikita.anvil.BaseDSL.WRAP
+import trikita.anvil.BaseDSL.v
+import trikita.anvil.BaseDSL.visibility
 import trikita.anvil.DSL
-import trikita.anvil.DSL.WRAP
+import trikita.anvil.DSL.dip
+import trikita.anvil.DSL.imageResource
+import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.init
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
+import trikita.anvil.DSL.scaleType
+import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
-import trikita.anvil.DSL.v
-import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
 import trikita.anvil.design.DesignDSL.appBarLayout
+import trikita.anvil.design.DesignDSL.collapsedTitleTextColor
+import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
+import trikita.anvil.design.DesignDSL.expanded
+import trikita.anvil.design.DesignDSL.expandedTitleColor
+import trikita.anvil.design.DesignDSL.title
+import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.jedux.Store
 import java.util.*
 
@@ -67,13 +81,49 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             appBarLayout {
                 size (MATCH, WRAP)
 
-                toolbar {
+                expanded (false)
+
+                collapsingToolbarLayout {
+                size (MATCH, MATCH)
+
+                init {
+                    val layout = Anvil.currentView<CollapsingToolbarLayout> ()
+                    val params = layout.layoutParams as AppBarLayout.LayoutParams
+                        params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
+                    title (store.state.events.name)
+                    titleEnabled (true)
+
+                    expandedTitleColor      (Color.TRANSPARENT)
+                    collapsedTitleTextColor (Color.WHITE)
+                }
+
+                imageView {
+                    size (MATCH, WRAP)
+
                     init {
+                        val imageView = Anvil.currentView<ImageView> ()
+                        val params = imageView.layoutParams as CollapsingToolbarLayout.LayoutParams
+                            params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+                    }
+
+                    imageResource (R.drawable.background)
+                    scaleType (ImageView.ScaleType.CENTER_CROP)
+                }
+
+                toolbar {
+                    size (MATCH, dip (56))
+
+                    init {
+                        val toolbar = Anvil.currentView<Toolbar> ()
+                        val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
+                            params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
+
                         weekview.setTheme (R.style.AppTheme_AppBarOverlay)
-                        weekview.setSupportActionBar (Anvil.currentView ())
                     }
 
                     popupTheme(R.style.AppTheme_PopupOverlay)
+                }
                 }
             }
 
