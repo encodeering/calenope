@@ -22,7 +22,7 @@ import trikita.anvil.DSL.horizontalSpacing
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.numColumns
-import trikita.anvil.DSL.onItemClick
+import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
 import trikita.anvil.DSL.sip
@@ -76,6 +76,13 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     textColor (Color.BLACK)
                     centerHorizontal ()
                     margin (dip (20))
+                }
+
+                onClick {
+                    run {
+                        store.dispatch (Action.SelectCalendar (item as String? ?: ""))
+                        store.dispatch (Action.OpenWeekview (main))
+                    }
                 }
             }
         }
@@ -135,13 +142,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                     numColumns (2)
                     horizontalSpacing (dip (0))
                     verticalSpacing   (dip (0))
-                    onItemClick { adapter, view, position, id ->
-                        run {
-                            store.dispatch (Action.SelectCalendar (adapter.getItemAtPosition (position) as String? ?: ""))
-                            store.dispatch (Action.OpenWeekview (main))
-                        }
                     }
-                }
                 }
             }
         }
