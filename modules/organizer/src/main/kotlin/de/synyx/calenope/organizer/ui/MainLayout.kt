@@ -7,12 +7,11 @@ import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.component.donut
 import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.FILL
-import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.init
+import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.adapter
 import trikita.anvil.DSL.button
@@ -34,13 +33,15 @@ import trikita.anvil.DSL.textColor
 import trikita.anvil.DSL.textSize
 import trikita.anvil.DSL.textView
 import trikita.anvil.DSL.verticalSpacing
-import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableAdapter
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
 import trikita.anvil.design.DesignDSL.appBarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
+import trikita.anvil.support.v4.Supportv4DSL.onRefresh
+import trikita.anvil.support.v4.Supportv4DSL.refreshing
+import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 
 /**
  * @author clausen - clausen@synyx.de
@@ -103,20 +104,15 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                         text ("Setting ${store.state.setting.account}")
                         onClick { store.dispatch (Action.OpenSettings (main)) }
                     }
-
-                    button {
-                        text ("Update")
-                        onClick { store.dispatch (Action.SynchronizeAccount ()) }
-                    }
                 }
             }
 
             relativeLayout {
                 layoutParams (scrolling)
 
-                donut {
-                    visibility (store.state.overview.synchronizing)
-                }
+                swipeRefreshLayout {
+                refreshing (store.state.overview.synchronizing)
+                onRefresh { store.dispatch (Action.SynchronizeAccount ()) }
 
                 gridView {
                     size (FILL, FILL)
@@ -130,6 +126,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                             store.dispatch (Action.OpenWeekview (main))
                         }
                     }
+                }
                 }
             }
         }
