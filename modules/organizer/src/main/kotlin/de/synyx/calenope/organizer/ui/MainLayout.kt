@@ -3,6 +3,7 @@ package de.synyx.calenope.organizer.ui
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.v7.widget.Toolbar
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
@@ -36,6 +37,8 @@ import trikita.anvil.DSL.verticalSpacing
 import trikita.anvil.RenderableAdapter
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.title
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.titleTextColor
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
 import trikita.anvil.design.DesignDSL.appBarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
@@ -93,15 +96,24 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 size (MATCH, WRAP)
 
                 toolbar {
+                    val toolbar = Anvil.currentView<Toolbar> ()
+
                     init {
+                        toolbar.minimumHeight = dip (56)
+
+                        val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
+                            lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
                         main.setTheme (R.style.AppTheme_AppBarOverlay)
                         main.setSupportActionBar (Anvil.currentView ())
                     }
 
+                    title (store.state.setting.account)
+                    titleTextColor (Color.WHITE)
+
                     popupTheme (R.style.AppTheme_PopupOverlay)
 
                     button {
-                        text ("Setting ${store.state.setting.account}")
                         onClick { store.dispatch (Action.OpenSettings (main)) }
                     }
                 }
