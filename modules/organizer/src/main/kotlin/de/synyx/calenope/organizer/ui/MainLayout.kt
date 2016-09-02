@@ -15,7 +15,6 @@ import trikita.anvil.BaseDSL.init
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.adapter
-import trikita.anvil.DSL.button
 import trikita.anvil.DSL.centerHorizontal
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.gridView
@@ -23,7 +22,6 @@ import trikita.anvil.DSL.horizontalSpacing
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.numColumns
-import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.onItemClick
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
@@ -100,22 +98,27 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
                     init {
                         toolbar.minimumHeight = dip (56)
+                        toolbar.inflateMenu (R.menu.overview)
+                        toolbar.setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.overview_settings_open -> {
+                                    store.dispatch (Action.OpenSettings (main))
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
 
                         val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
                             lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
 
                         main.setTheme (R.style.AppTheme_AppBarOverlay)
-                        main.setSupportActionBar (Anvil.currentView ())
                     }
 
                     title (store.state.setting.account)
                     titleTextColor (Color.WHITE)
 
                     popupTheme (R.style.AppTheme_PopupOverlay)
-
-                    button {
-                        onClick { store.dispatch (Action.OpenSettings (main)) }
-                    }
                 }
             }
 
