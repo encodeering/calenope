@@ -3,44 +3,50 @@ package de.synyx.calenope.organizer.ui
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.v7.widget.DefaultItemAnimator
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.Toolbar
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.component.donut
 import rx.Observer
 import trikita.anvil.Anvil
-import trikita.anvil.BaseDSL.FILL
-import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.init
+import trikita.anvil.DSL.CENTER
+import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
-import trikita.anvil.DSL.adapter
-import trikita.anvil.DSL.button
 import trikita.anvil.DSL.centerHorizontal
 import trikita.anvil.DSL.dip
-import trikita.anvil.DSL.gridView
-import trikita.anvil.DSL.horizontalSpacing
+import trikita.anvil.DSL.gravity
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.margin
-import trikita.anvil.DSL.numColumns
 import trikita.anvil.DSL.onClick
-import trikita.anvil.DSL.onItemClick
 import trikita.anvil.DSL.orientation
-import trikita.anvil.DSL.relativeLayout
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.text
 import trikita.anvil.DSL.textColor
 import trikita.anvil.DSL.textSize
 import trikita.anvil.DSL.textView
-import trikita.anvil.DSL.verticalSpacing
-import trikita.anvil.DSL.visibility
-import trikita.anvil.RenderableAdapter
+import trikita.anvil.RenderableRecyclerViewAdapter
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.title
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.titleTextColor
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
+import trikita.anvil.cardview.v7.CardViewv7DSL.cardView
 import trikita.anvil.design.DesignDSL.appBarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
+import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.adapter
+import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.gridLayoutManager
+import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.itemAnimator
+import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.layoutManager
+import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.recyclerView
+import trikita.anvil.support.v4.Supportv4DSL.onRefresh
+import trikita.anvil.support.v4.Supportv4DSL.refreshing
+import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 
 /**
  * @author clausen - clausen@synyx.de
@@ -63,17 +69,27 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
     private val tiles : RxRenderableAdapter<String> by lazy {
         RxRenderableAdapter<String> { item, position ->
-            relativeLayout {
-                size (WRAP, WRAP)
-                orientation (LinearLayout.VERTICAL)
+            cardView {
+                size (MATCH, MATCH)
+
+                gravity (CENTER)
+
+                margin (dip (5), dip (5))
 
                 textView {
-                    size (WRAP, WRAP)
+                    size (MATCH, MATCH)
                     text (item)
                     textSize (sip (10.toFloat()))
                     textColor (Color.BLACK)
                     centerHorizontal ()
                     margin (dip (20))
+                }
+
+                onClick {
+                    run {
+                        store.dispatch (Action.SelectCalendar (item as String? ?: ""))
+                        store.dispatch (Action.OpenWeekview (main))
+                    }
                 }
             }
         }
@@ -92,60 +108,62 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 size (MATCH, WRAP)
 
                 toolbar {
+                    val toolbar = Anvil.currentView<Toolbar> ()
+
                     init {
+                        toolbar.minimumHeight = dip (56)
+                        toolbar.inflateMenu (R.menu.overview)
+                        toolbar.setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.overview_settings_open -> {
+                                    store.dispatch (Action.OpenSettings (main))
+                                    true
+                                }
+                                else -> false
+                            }
+                        }
+
+                        val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
+                            lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
                         main.setTheme (R.style.AppTheme_AppBarOverlay)
-                        main.setSupportActionBar (Anvil.currentView ())
                     }
+
+                    title (store.state.setting.account)
+                    titleTextColor (Color.WHITE)
 
                     popupTheme (R.style.AppTheme_PopupOverlay)
-
-                    button {
-                        text ("Setting ${store.state.setting.account}")
-                        onClick { store.dispatch (Action.OpenSettings (main)) }
-                    }
-
-                    button {
-                        text ("Update")
-                        onClick { store.dispatch (Action.SynchronizeAccount ()) }
-                    }
                 }
             }
 
-            relativeLayout {
+            swipeRefreshLayout {
                 layoutParams (scrolling)
 
-                donut {
-                    visibility (store.state.overview.synchronizing)
-                }
+                refreshing (store.state.overview.synchronizing)
+                onRefresh { store.dispatch (Action.SynchronizeAccount ()) }
 
-                gridView {
-                    size (FILL, FILL)
-                    adapter (tiles)
-                    numColumns (2)
-                    horizontalSpacing (dip (0))
-                    verticalSpacing   (dip (0))
-                    onItemClick { adapter, view, position, id ->
-                        run {
-                            store.dispatch (Action.SelectCalendar (adapter.getItemAtPosition (position) as String? ?: ""))
-                            store.dispatch (Action.OpenWeekview (main))
-                        }
+                recyclerView {
+                    init {
+                        layoutManager (LinearLayoutManager (context, LinearLayoutManager.VERTICAL, false))
+                        itemAnimator  (DefaultItemAnimator ())
+                        gridLayoutManager (2)
+                        adapter       (tiles)
                     }
                 }
             }
         }
     }
 
-    private class RxRenderableAdapter<T> (private val view : (value : T, position : Int) -> Unit) : RenderableAdapter (), Observer<Collection<T>> {
+    private class RxRenderableAdapter<T> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter (), Observer<Collection<T>> {
 
         private var last : Collection<T> = emptyList ()
 
-        override fun view (index : Int) {
-            view (getItem (index), index)
+        override fun view (holder : RecyclerView.ViewHolder) {
+            val                   position = holder.layoutPosition
+            view (last.elementAt (position), position)
         }
 
-        override fun getItem (position : Int) : T = last.elementAt (position)
-
-        override fun getCount () : Int = last.size
+        override fun getItemCount () : Int = last.size
 
         override fun onNext (t : Collection<T>) {
             last = t
