@@ -1,13 +1,19 @@
 package de.synyx.calenope.organizer.ui
 
-import android.content.Context
 import android.graphics.Color
+import android.support.design.widget.AppBarLayout
+import android.support.design.widget.CollapsingToolbarLayout
+import android.support.design.widget.CoordinatorLayout
+import android.support.v7.widget.Toolbar
+import android.widget.ImageView
+import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.component.donut
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -15,22 +21,46 @@ import org.joda.time.Minutes
 import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
+import trikita.anvil.BaseDSL.WRAP
+import trikita.anvil.BaseDSL.v
+import trikita.anvil.BaseDSL.visibility
 import trikita.anvil.DSL
+import trikita.anvil.DSL.dip
+import trikita.anvil.DSL.imageResource
+import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.init
+import trikita.anvil.DSL.layoutParams
+import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.relativeLayout
+import trikita.anvil.DSL.scaleType
+import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
-import trikita.anvil.DSL.v
-import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableView
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
+import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
+import trikita.anvil.design.DesignDSL.appBarLayout
+import trikita.anvil.design.DesignDSL.collapsedTitleTextColor
+import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
+import trikita.anvil.design.DesignDSL.coordinatorLayout
+import trikita.anvil.design.DesignDSL.expanded
+import trikita.anvil.design.DesignDSL.expandedTitleColor
+import trikita.anvil.design.DesignDSL.title
+import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.jedux.Store
 import java.util.*
 
 /**
  * @author clausen - clausen@synyx.de
  */
-class WeekviewLayout (private val c : Context) : RenderableView (c) {
+class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview) {
 
     private val store by lazy { Application.store () }
+
+    private val scrolling by lazy {
+        val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
+            params.behavior = AppBarLayout.ScrollingViewBehavior ()
+            params
+    }
 
     private lateinit var events : MonthLoaderAdapter<Event>
 
@@ -44,33 +74,89 @@ class WeekviewLayout (private val c : Context) : RenderableView (c) {
     }
 
     private fun weekview () {
-        relativeLayout {
+        coordinatorLayout {
             size (MATCH, MATCH)
+            orientation (LinearLayout.VERTICAL)
 
-            donut {
-                visibility (store.state.events.synchronizing)
+            appBarLayout {
+                size (MATCH, WRAP)
+
+                expanded (false)
+
+                collapsingToolbarLayout {
+                    size (MATCH, MATCH)
+
+                    init {
+                        val layout = Anvil.currentView<CollapsingToolbarLayout> ()
+                        val params = layout.layoutParams as AppBarLayout.LayoutParams
+                            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
+                        title (store.state.events.name)
+                        titleEnabled (true)
+
+                        expandedTitleColor      (Color.TRANSPARENT)
+                        collapsedTitleTextColor (Color.WHITE)
+                    }
+
+                    imageView {
+                        size (MATCH, WRAP)
+
+                        init {
+                            val imageView = Anvil.currentView<ImageView> ()
+                            val params = imageView.layoutParams as CollapsingToolbarLayout.LayoutParams
+                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+                        }
+
+                        imageResource (R.drawable.background)
+                        scaleType (ImageView.ScaleType.CENTER_CROP)
+                    }
+
+                    toolbar {
+                        size (MATCH, dip (56))
+
+                        init {
+                            val toolbar = Anvil.currentView<Toolbar> ()
+                            val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
+                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
+
+                            weekview.setTheme (R.style.AppTheme_AppBarOverlay)
+                        }
+
+                        popupTheme(R.style.AppTheme_PopupOverlay)
+                    }
+                }
             }
 
-            v (WeekView::class.java) {
-                init {
-                    val week = Anvil.currentView<WeekView> ()
+            relativeLayout {
+                layoutParams (scrolling)
 
-                    events = MonthLoaderAdapter<Event> (week, store)
+                size (MATCH, MATCH)
 
-                        week.monthChangeListener         = events
-                        week.numberOfVisibleDays         = 1
-                        week.columnGap                   = DSL.dip (8)
-                        week.hourHeight                  = DSL.dip (600)
-                        week.headerColumnPadding         = DSL.dip (8)
-                        week.headerRowPadding            = DSL.dip (12)
-                        week.textSize                    = DSL.sip (10)
-                        week.eventTextSize               = DSL.sip (10)
-                        week.eventTextColor              = Color.WHITE
-                        week.headerColumnTextColor       = Color.parseColor ("#8f000000")
-                        week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
-                        week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
-                        week.dayBackgroundColor          = Color.parseColor ("#05000000")
-                        week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                donut {
+                    visibility (store.state.events.synchronizing)
+                }
+
+                v (WeekView::class.java) {
+                    init {
+                        val week = Anvil.currentView<WeekView> ()
+
+                        events = MonthLoaderAdapter<Event> (week, store)
+
+                            week.monthChangeListener         = events
+                            week.numberOfVisibleDays         = 1
+                            week.columnGap                   = dip (8)
+                            week.hourHeight                  = dip (600)
+                            week.headerColumnPadding         = dip (8)
+                            week.headerRowPadding            = dip (12)
+                            week.textSize                    = sip (10)
+                            week.eventTextSize               = sip (10)
+                            week.eventTextColor              = Color.WHITE
+                            week.headerColumnTextColor       = Color.parseColor ("#8f000000")
+                            week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
+                            week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
+                            week.dayBackgroundColor          = Color.parseColor ("#05000000")
+                            week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                    }
                 }
             }
         }

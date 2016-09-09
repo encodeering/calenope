@@ -26,7 +26,8 @@
 
         <activity android:name=".ui.Settings" />
 
-        <activity android:name=".ui.Weekview" />
+        <activity android:name=".ui.Weekview"
+                  android:theme="@style/AppTheme.NoActionBar" />
 
         <meta-data
             android:name="com.google.android.gms.version"
