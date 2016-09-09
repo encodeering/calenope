@@ -154,7 +154,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
         }
     }
 
-    private class RxRenderableAdapter<T> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter (), Observer<Collection<T>> {
+    private class RxRenderableAdapter<T : Comparable<T>> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter (), Observer<Collection<T>> {
 
         private var last : Collection<T> = emptyList ()
 
@@ -166,7 +166,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
         override fun getItemCount () : Int = last.size
 
         override fun onNext (t : Collection<T>) {
-            last = t
+            last = t.sorted ()
             notifyDataSetChanged ()
         }
 
