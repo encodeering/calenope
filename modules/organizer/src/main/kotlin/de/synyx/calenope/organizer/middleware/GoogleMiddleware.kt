@@ -16,7 +16,7 @@ import trikita.jedux.Store
 import java.util.*
 import kotlin.properties.Delegates
 
-class GoogleMiddleware(private val application : Application) : Middleware {
+class GoogleMiddleware(private val application : Application, dispatch : (Action) -> Unit) : Middleware (dispatch) {
 
     companion object {
 

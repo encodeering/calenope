@@ -30,9 +30,11 @@ class Application () : android.app.Application () {
     override fun onCreate () {
         super.onCreate ()
 
+        val dispatch = fun (action: Action) { store ().dispatch (action) }
+
         self = this
 
-        store = Store (State, State.Default (), GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logger (TAG) else NoopMiddleware ())
+        store = Store (State, State.Default (), GoogleMiddleware (this, dispatch), FlowMiddleware (dispatch), DataMiddleware (this, dispatch), if (debuggable ()) Logger (TAG) else NoopMiddleware (dispatch))
         store?.subscribe { Anvil.render () }
 
         store?.dispatch (Action.Synchronize ())

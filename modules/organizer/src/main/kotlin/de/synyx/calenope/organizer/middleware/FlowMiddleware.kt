@@ -9,7 +9,7 @@ import trikita.jedux.Store
 /**
  * @author clausen - clausen@synyx.de
  */
-class FlowMiddleware () : Middleware {
+class FlowMiddleware (dispatch : (Action) -> Unit) : Middleware (dispatch) {
 
     interface Open {
         val context : Context
