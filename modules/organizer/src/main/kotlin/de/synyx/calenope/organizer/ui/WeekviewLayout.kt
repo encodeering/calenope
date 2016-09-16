@@ -14,7 +14,7 @@ import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.component.donut
+import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
@@ -23,15 +23,13 @@ import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.v
-import trikita.anvil.BaseDSL.visibility
-import trikita.anvil.DSL
 import trikita.anvil.DSL.dip
+import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.init
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.orientation
-import trikita.anvil.DSL.relativeLayout
 import trikita.anvil.DSL.scaleType
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
@@ -46,8 +44,12 @@ import trikita.anvil.design.DesignDSL.expanded
 import trikita.anvil.design.DesignDSL.expandedTitleColor
 import trikita.anvil.design.DesignDSL.title
 import trikita.anvil.design.DesignDSL.titleEnabled
+import trikita.anvil.support.v4.Supportv4DSL.onRefresh
+import trikita.anvil.support.v4.Supportv4DSL.refreshing
+import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 import trikita.jedux.Store
 import java.util.*
+import kotlin.properties.Delegates
 
 /**
  * @author clausen - clausen@synyx.de
@@ -63,6 +65,10 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
     }
 
     private lateinit var events : MonthLoaderAdapter<Event>
+
+    private lateinit var week : WeekView
+
+    private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
 
     override fun view () {
         weekview ()
@@ -127,18 +133,20 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 }
             }
 
-            relativeLayout {
+            swipeRefreshLayout {
                 layoutParams (scrolling)
 
                 size (MATCH, MATCH)
 
-                donut {
-                    visibility (store.state.events.synchronizing)
-                }
-
-                v (WeekView::class.java) {
+                v (WeekviewTouchProxy::class.java) {
                     init {
-                        val week = Anvil.currentView<WeekView> ()
+                         week = Anvil.currentView<WeekviewTouchProxy> ()
+                        (week as WeekviewTouchProxy).scrolling = object : WeekviewTouchProxy.Scrolling {
+
+                            override fun top (state : Boolean) {
+                                swipeable = state
+                            }
+                        }
 
                         events = MonthLoaderAdapter<Event> (week, store)
 
@@ -157,6 +165,16 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             week.dayBackgroundColor          = Color.parseColor ("#05000000")
                             week.todayBackgroundColor        = Color.parseColor ("#1848adff")
                     }
+                }
+
+                enabled (swipeable)
+
+                refreshing (store.state.events.synchronizing)
+                onRefresh {
+                    store.dispatch (Action.SynchronizeCalendar (
+                        year  = week.firstVisibleDay.get (Calendar.YEAR),
+                        month = week.firstVisibleDay.get (Calendar.MONTH) + 1
+                    ))
                 }
             }
         }
