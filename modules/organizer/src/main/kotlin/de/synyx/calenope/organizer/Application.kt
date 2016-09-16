@@ -21,23 +21,23 @@ class Application () : android.app.Application () {
 
         private var self : Application? = null
 
-        fun store () : Store<Action, State> = self!!.store!!
+                val store by lazy { self?.store!! }
 
     }
 
-    private var store : Store<Action, State>? = null
+    lateinit var store : Store<Action, State>
 
     override fun onCreate () {
         super.onCreate ()
 
-        val dispatch = fun (action: Action) { store ().dispatch (action) }
+        val dispatch = fun (action: Action) { store.dispatch (action) }
 
         self = this
 
         store = Store (State, State.Default (), GoogleMiddleware (this, dispatch), FlowMiddleware (dispatch), DataMiddleware (this, dispatch), if (debuggable ()) Logger (TAG) else NoopMiddleware (dispatch))
-        store?.subscribe { Anvil.render () }
+        store.subscribe { Anvil.render () }
 
-        store?.dispatch (Action.Synchronize ())
+        store.dispatch (Action.Synchronize ())
     }
 
 }

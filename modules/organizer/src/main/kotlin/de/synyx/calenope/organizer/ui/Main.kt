@@ -47,7 +47,7 @@ class Main : AppCompatActivity () {
 
         when (requestcode) {
             PERMISSION -> if (grants.any { it == PackageManager.PERMISSION_GRANTED })
-                Application.store ().dispatch (Action.SynchronizeAccount ())
+                Application.store.dispatch (Action.SynchronizeAccount ())
         }
     }
 

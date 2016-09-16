@@ -54,7 +54,7 @@ import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 
 class MainLayout (private val main : Main) : RenderableView (main) {
 
-    private val store by lazy { Application.store () }
+    private val store by lazy { Application.store }
 
     private val scrolling by lazy {
         val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
