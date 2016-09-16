@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State
+import de.synyx.calenope.organizer.toast
 import trikita.jedux.Store
 
 /**
@@ -67,14 +68,10 @@ class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit
         try {
             this@DataMiddleware.state.edit ().putString (DATA, gson.toJson (this.state)).commit ()
         } catch (e : Exception) {
-            toast (R.string.save_error)
+            context.toast (R.string.save_error, duration = Toast.LENGTH_LONG)
         }
     }
 
     private fun property (i : Int) = context.getString (i)
-
-    private fun toast (message : Int) {
-        Toast.makeText (context, message, Toast.LENGTH_LONG).show ()
-    }
 
 }
