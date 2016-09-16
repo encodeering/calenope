@@ -1,6 +1,7 @@
 package de.synyx.calenope.organizer
 
 import de.synyx.calenope.core.api.model.Event
+import org.joda.time.DateTime
 import trikita.jedux.Store
 import java.util.Collections.singletonMap
 
@@ -31,7 +32,7 @@ interface State {
     )
 
     data class Events  (
-        @Transient val map : Map<Pair<Int, Int>, Collection<Event>> = emptyMap (),
+        @Transient val map : Map<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> = emptyMap (),
                    val synchronizing : Boolean = false,
                    val name : String = ""
     )
@@ -49,7 +50,7 @@ interface State {
         private fun events   (action : Action, events : State.Events) : Events =
             when (action) {
                 is Action.Synchronize       -> action.state.events
-                is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, action.events)), synchronizing = action.synchronizing)
+                is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, Pair (action.timestamp, action.events))), synchronizing = action.synchronizing)
                 is Action.SelectCalendar    ->              events.copy (map = emptyMap (), name = action.name)
                 else                        ->              events
             }

@@ -5,6 +5,7 @@ import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.ui.Settings
 import de.synyx.calenope.organizer.ui.Weekview
+import org.joda.time.DateTime
 
 /**
  * @author clausen - clausen@synyx.de
@@ -15,7 +16,7 @@ interface Action {
 
     data class SynchronizeAccount (val calendars : Collection<String> = emptyList (), val synchronizing : Boolean = true) : Action
 
-    data class SynchronizeCalendar (val year : Int, val month : Int, val events : Collection<Event> = emptyList (), val synchronizing : Boolean = true) : Action {
+    data class SynchronizeCalendar (val year : Int, val month : Int, val timestamp : DateTime = DateTime.now (), val events : Collection<Event> = emptyList (), val synchronizing : Boolean = true) : Action {
 
         val key :    Pair<Int, Int>
             get () = Pair (year, month)

@@ -180,24 +180,23 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Store<Action, *>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Collection<V>>> {
+    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Store<Action, *>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>> {
 
-        private val map : MutableMap<Pair<Int, Int>, Pair<Collection<V>, DateTime>> = mutableMapOf ()
+        private val map : MutableMap<Pair<Int, Int>, Pair<DateTime, Collection<V>>> = mutableMapOf ()
 
         override fun onMonthChange     (year : Int, month : Int) : List<WeekViewEvent>? {
             val             key = Pair (year,       month)
             val value = map[key]
 
-            if (value == null || outdates (value.second)) {
+            if (value == null || outdates (value.first)) {
                 store.dispatch (Action.SynchronizeCalendar (year, month))
             }
 
-            return value?.first?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
+            return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
         }
 
-        override fun onNext (t : Map<Pair<Int, Int>, Collection<V>>) {
-            val timestamp = DateTime.now ()
-            map += t.mapValues { Pair (it.value, timestamp) }
+        override fun onNext (t : Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>) {
+            map += t
             week.notifyDatasetChanged ()
         }
 
