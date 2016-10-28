@@ -1,0 +1,32 @@
+language: android
+jdk: oraclejdk8
+sudo: required
+
+android:
+  components:
+  - tools
+  - platform-tools
+  - android-23
+  - build-tools-24.0.0
+  - extra-android-m2repository
+  - extra-google-m2repository
+
+before_install:
+- openssl aes-256-cbc -K $encrypted_ce517773195e_key -iv $encrypted_ce517773195e_iv -in modules/organizer/google-services.json.enc -out modules/organizer/google-services.json -d
+
+script:
+- ./gradlew clean build
+
+after_failure:
+- find $TRAVIS_BUILD_DIR -name 'lint-results-debug.xml' -exec cat {} \;
+
+deploy:
+  provider: releases
+  file: modules/organizer/**/apk/organizer-debug.apk
+  file_glob: true
+  skip_cleanup: true
+  api_key:
+    secure: zNyqJ8T6hWE2KVgby5aSA7fudMrWGthtkfID/kseAoIArmvc33ARxAyeIxnbm65rtK+hvsXRAuOX/3fHpwkrVWu1xuxA4E+cCmU0E4mzjLy9z/Pc/Lw+6X4c+F2m19CgLNFDej3lvDWMG/eh5QQrX8IVlZu7dmKAr0e0kE9SRl5JZBf4CKkWUP/UHC6KUOTqMVXPsFwaEXjOhba32/NeKwBUQGntwbpT31psTj1jEmiP7w2aG/nv2zbmTynVAp8fuVAlC7VVuvG5gcfCNlXIS/GXMro3KvGsqWGzO4lontwrT6XoLpFZP/n2PgdNgqWkTCfJjqIqV+fRzXz7KWuBS3KRul4gsuQJhkb2vZi1ueACPLl63QbJqWxq/WH1LHnKpNZztEdetuW1g6y+XfQnuzH4Hd4MW2cPZdZf+RwgaquCQVS33gVX2Y/e5fhDJ20eAoWZlHE4p6nzjp7ENCBZHnv4kZEqQK/i8BjvigdJaahVN+wnYN3cdQPwODaMISQvq+7caDYGBj2GREZXsRXhhFCjwSGIX24E6s+NF89OBdHJJGMtbIVHs0PONfj3KCRNKf0cNYxh8GgtTP5HmIVozq8WVSoMSBPyNyOiEeDOeFP3iAcZh3MItXNaNIJmZkOZEscIqSBUn80dXcr6J7hfO2Bmus17rAqr5d2XMl4pRgU=
+  on:
+    tags: true
+    repo: synyx/calenope
