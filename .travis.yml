@@ -1,0 +1,18 @@
+language: android
+jdk: oraclejdk8
+sudo: required
+
+android:
+  components:
+  - tools
+  - platform-tools
+  - android-23
+  - build-tools-24.0.0
+  - extra-android-m2repository
+  - extra-google-m2repository
+
+before_install:
+- openssl aes-256-cbc -K $encrypted_ce517773195e_key -iv $encrypted_ce517773195e_iv -in modules/organizer/google-services.json.enc -out modules/organizer/google-services.json -d
+
+script:
+- ./gradlew clean build
