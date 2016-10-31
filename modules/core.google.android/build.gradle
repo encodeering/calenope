@@ -17,6 +17,10 @@ android {
         release {
             minifyEnabled false
         }
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
     }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
