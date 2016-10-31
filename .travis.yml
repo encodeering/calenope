@@ -17,6 +17,9 @@ before_install:
 script:
 - ./gradlew clean build
 
+after_success:
+- find $TRAVIS_BUILD_DIR -name '*.apk' -exec sha256sum {} \;
+
 after_failure:
 - find $TRAVIS_BUILD_DIR -name 'lint-results-debug.xml' -exec cat {} \;
 
