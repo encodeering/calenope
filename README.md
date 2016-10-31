@@ -1,4 +1,4 @@
-# Calenope
+# Calenope [![Build Status](https://travis-ci.org/synyx/calenope.svg?branch=master)](https://travis-ci.org/synyx/calenope)
 
 A calendar project written in Kotlin with a sample Android application showing the calendar events from available Google accounts.
 
