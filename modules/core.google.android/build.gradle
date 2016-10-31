@@ -17,6 +17,18 @@ android {
         release {
             minifyEnabled false
         }
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
+    }
+    signingConfigs {
+        debug {
+            storeFile file ("${rootProject.projectDir}/keystore/android/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
     }
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
