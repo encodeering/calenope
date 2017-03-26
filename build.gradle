@@ -1,5 +1,6 @@
 buildscript {
     ext.kotlinversion = '1.1.1'
+    ext.gradleandroidversion = '2.2.2'
 }
 
 subprojects {
