@@ -42,14 +42,14 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.1.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinversion"
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinversion"
 
     compile project (':core')
     compile project (':core.google')

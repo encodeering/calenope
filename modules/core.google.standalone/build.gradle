@@ -11,12 +11,12 @@ buildscript {
         mavenCentral ()
     }
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinversion"
     }
 }
 
 dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinversion"
 
     compile project (':core')
     compile project (':core.google')
