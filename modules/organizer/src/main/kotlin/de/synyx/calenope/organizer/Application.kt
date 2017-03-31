@@ -1,12 +1,15 @@
 package de.synyx.calenope.organizer
 
+import android.util.Log
+import com.encodeering.conflate.experimental.android.conflate
+import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Storage
+import com.encodeering.conflate.experimental.logging.Logging
 import de.synyx.calenope.organizer.middleware.DataMiddleware
 import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
 import de.synyx.calenope.organizer.middleware.NoopMiddleware
 import trikita.anvil.Anvil
-import trikita.jedux.Logger
-import trikita.jedux.Store
 import android.app.Application as Android
 
 /**
@@ -23,21 +26,22 @@ class Application () : android.app.Application () {
 
                 val store by lazy { self?.store!! }
 
+
+        val dispatch = fun (action: Action) { store.dispatcher.dispatch (action) }
+
     }
 
-    lateinit var store : Store<Action, State>
+    lateinit var store : Storage<State>
 
     override fun onCreate () {
         super.onCreate ()
 
-        val dispatch = fun (action: Action) { store.dispatch (action) }
-
         self = this
 
-        store = Store (State, State.Default (), GoogleMiddleware (this, dispatch), FlowMiddleware (dispatch), DataMiddleware (this, dispatch), if (debuggable ()) Logger (TAG) else NoopMiddleware (dispatch))
+        store = conflate (State.Default (), State, GoogleMiddleware (this, dispatch), FlowMiddleware (dispatch), DataMiddleware (this, dispatch), if (debuggable ()) Logging (log = { text, action -> Log.d (TAG, "$text $action") }) else NoopMiddleware (dispatch))
         store.subscribe { Anvil.render () }
 
-        store.dispatch (Action.Synchronize ())
+        dispatch (Synchronize ())
     }
 
 }

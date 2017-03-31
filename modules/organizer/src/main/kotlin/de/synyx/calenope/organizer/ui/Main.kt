@@ -6,9 +6,9 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.toast
 
 /**
@@ -47,7 +47,7 @@ class Main : AppCompatActivity () {
 
         when (requestcode) {
             PERMISSION -> if (grants.any { it == PackageManager.PERMISSION_GRANTED })
-                Application.store.dispatch (Action.SynchronizeAccount ())
+                Application.dispatch (SynchronizeAccount ())
         }
     }
 

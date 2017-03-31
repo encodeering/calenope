@@ -1,8 +1,9 @@
 package de.synyx.calenope.organizer.middleware
 
-import de.synyx.calenope.organizer.Action
+import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Middleware.Connection
+import com.encodeering.conflate.experimental.api.Middleware.Interceptor
 import de.synyx.calenope.organizer.State
-import trikita.jedux.Store
 
 /**
  * @author clausen - clausen@synyx.de
@@ -10,6 +11,14 @@ import trikita.jedux.Store
 
 class NoopMiddleware (dispatch : (Action) -> Unit) : Middleware (dispatch) {
 
-    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) = next.dispatch (action)
+    override fun interceptor (connection : Connection<State>) : Interceptor {
+        return object : Interceptor {
+
+            suspend override fun dispatch(action : Action) {
+                connection.next (action)
+            }
+
+        }
+    }
 
 }

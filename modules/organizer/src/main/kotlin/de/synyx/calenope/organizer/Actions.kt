@@ -1,6 +1,7 @@
 package de.synyx.calenope.organizer
 
 import android.content.Context
+import com.encodeering.conflate.experimental.api.Action
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.ui.Settings
@@ -10,7 +11,6 @@ import org.joda.time.DateTime
 /**
  * @author clausen - clausen@synyx.de
  */
-interface Action {
 
     data class Synchronize    (val state : State = State.Default ()) : Action
 
@@ -30,5 +30,3 @@ interface Action {
     data class OpenSettings   (override val context : Context) : FlowMiddleware.Open by Open (context, Settings::class.java), Action
 
     data class OpenWeekview   (override val context : Context) : FlowMiddleware.Open by Open (context, Weekview::class.java), Action
-
-}
