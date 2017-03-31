@@ -39,15 +39,15 @@ class DataMiddleware (private val context : Context) : Middleware<State> {
     override fun interceptor (connection : Middleware.Connection<State>) : Middleware.Interceptor {
         return object : Middleware.Interceptor {
 
-    private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
-        when (key) {
-            property (R.string.account) -> launch (EmptyCoroutineContext) { connection.initial (Synchronize ()) }
-        }
-    }
+            private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
+                when (key) {
+                    property (R.string.account) -> launch (EmptyCoroutineContext) { connection.initial (Synchronize ()) }
+                }
+            }
 
-    init {
-        settings.registerOnSharedPreferenceChangeListener (settingsupdate)
-    }
+            init {
+                settings.registerOnSharedPreferenceChangeListener (settingsupdate)
+            }
 
             suspend override fun dispatch(action : Action) {
                 when (action) {

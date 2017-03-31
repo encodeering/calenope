@@ -39,23 +39,23 @@ class GoogleMiddleware(private val application : Application) : Middleware<State
     override fun interceptor (connection : Connection<State>) : Interceptor {
         return object : Interceptor {
 
-    private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
-        if (next == previous) return@observable
+            private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
+                if (next == previous) return@observable
 
-        resynchronize ()
-    }
+                resynchronize ()
+            }
 
-    private var account : String by Delegates.observable ("") { property, previous, next ->
-        if (next == previous) return@observable
-        if (next.isBlank ())  return@observable
+            private var account : String by Delegates.observable ("") { property, previous, next ->
+                if (next == previous) return@observable
+                if (next.isBlank ())  return@observable
 
-        val meta = mapOf (
-            "context" to application.applicationContext,
-            "account" to GoogleAccountManager (application).getAccountByName (next)
-        )
+                val meta = mapOf (
+                    "context" to application.applicationContext,
+                    "account" to GoogleAccountManager (application).getAccountByName (next)
+                )
 
-        board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
-    }
+                board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
+            }
 
             suspend override fun dispatch (action : Action) {
                 when (action) {
@@ -78,56 +78,56 @@ class GoogleMiddleware(private val application : Application) : Middleware<State
                 launch (EmptyCoroutineContext) { connection.initial (SynchronizeAccount ()) }
             }
 
-    private suspend fun calendars (observer : suspend (Collection<String>) -> Unit) {
-        oauth (observer, emptyList<String> ()) {
-            all ().map { it.id () }
-        }
-    }
-
-    private suspend fun events (calendar : String, start : Pair<Int, Int>, observer : suspend (Collection<Event>) -> Unit) {
-        val yearmonth = DateTime ().withYear (start.first).withMonthOfYear (start.second)
-
-        val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
-        val to = from.plusMonths (1)
-
-        oauth (observer, emptyList ()) {
-            name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList ()
-        }
-    }
-
-    private suspend fun <R> oauth (action : suspend (R) -> Unit, default : R? = null, command : Board.() -> R) {
-        val observer = delay { command (board!!) }.onErrorResumeNext { e ->
-            Log.e (GoogleMiddleware.TAG, e.message, e)
-
-            when (e) {
-                is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
+            private suspend fun calendars (observer : suspend (Collection<String>) -> Unit) {
+                oauth (observer, emptyList<String> ()) {
+                    all ().map { it.id () }
+                }
             }
 
-            if (default != null) Observable.just (default)
-            else
-                Observable.empty<R> ()
-        }.eventloop ()
+            private suspend fun events (calendar : String, start : Pair<Int, Int>, observer : suspend (Collection<Event>) -> Unit) {
+                val yearmonth = DateTime ().withYear (start.first).withMonthOfYear (start.second)
 
-        suspendCoroutine<Unit> { continuation ->
-            observer.subscribe ({
+                val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
+                val to = from.plusMonths (1)
 
-                action.startCoroutine (it, object : Continuation<Unit> {
+                oauth (observer, emptyList ()) {
+                    name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList ()
+                }
+            }
 
-                    override val context = EmptyCoroutineContext
+            private suspend fun <R> oauth (action : suspend (R) -> Unit, default : R? = null, command : Board.() -> R) {
+                val observer = delay { command (board!!) }.onErrorResumeNext { e ->
+                    Log.e (GoogleMiddleware.TAG, e.message, e)
 
-                    override fun resume (value : Unit) {
-                        continuation.resume     (Unit)
+                    when (e) {
+                        is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
                     }
 
-                    override fun resumeWithException     (exception : Throwable) {
-                        continuation.resumeWithException (exception)
-                    }
+                    if (default != null) Observable.just (default)
+                    else
+                        Observable.empty<R> ()
+                }.eventloop ()
 
-                })
+                suspendCoroutine<Unit> { continuation ->
+                    observer.subscribe ({
 
-            }, continuation::resumeWithException)
-        }
-    }
+                        action.startCoroutine (it, object : Continuation<Unit> {
+
+                            override val context = EmptyCoroutineContext
+
+                            override fun resume (value : Unit) {
+                                continuation.resume     (Unit)
+                            }
+
+                            override fun resumeWithException     (exception : Throwable) {
+                                continuation.resumeWithException (exception)
+                            }
+
+                        })
+
+                    }, continuation::resumeWithException)
+                }
+            }
         }
     }
 
