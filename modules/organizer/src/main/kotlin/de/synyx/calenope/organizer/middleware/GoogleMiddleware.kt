@@ -3,6 +3,7 @@ package de.synyx.calenope.organizer.middleware
 import android.content.Intent
 import android.util.Log
 import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Middleware
 import com.encodeering.conflate.experimental.api.Middleware.Connection
 import com.encodeering.conflate.experimental.api.Middleware.Interceptor
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
@@ -20,13 +21,14 @@ import org.joda.time.DateTime
 import rx.Observable
 import java.util.ServiceLoader
 import java.util.TimeZone
+import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.EmptyCoroutineContext
 import kotlin.coroutines.experimental.startCoroutine
 import kotlin.coroutines.experimental.suspendCoroutine
 import kotlin.properties.Delegates
 
-class GoogleMiddleware(private val application : Application, dispatch : (Action) -> Unit) : Middleware (dispatch) {
+class GoogleMiddleware(private val application : Application) : Middleware<State> {
 
     companion object {
 
@@ -34,10 +36,13 @@ class GoogleMiddleware(private val application : Application, dispatch : (Action
 
     }
 
+    override fun interceptor (connection : Connection<State>) : Interceptor {
+        return object : Interceptor {
+
     private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
         if (next == previous) return@observable
 
-        fire (SynchronizeAccount ())
+        resynchronize ()
     }
 
     private var account : String by Delegates.observable ("") { property, previous, next ->
@@ -51,9 +56,6 @@ class GoogleMiddleware(private val application : Application, dispatch : (Action
 
         board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
     }
-
-    override fun interceptor (connection : Connection<State>) : Interceptor {
-        return object : Interceptor {
 
             suspend override fun dispatch (action : Action) {
                 when (action) {
@@ -72,8 +74,9 @@ class GoogleMiddleware(private val application : Application, dispatch : (Action
                 account = connection.state.setting.account
             }
 
-        }
-    }
+            private fun resynchronize () {
+                launch (EmptyCoroutineContext) { connection.initial (SynchronizeAccount ()) }
+            }
 
     private suspend fun calendars (observer : suspend (Collection<String>) -> Unit) {
         oauth (observer, emptyList<String> ()) {
@@ -123,6 +126,8 @@ class GoogleMiddleware(private val application : Application, dispatch : (Action
                 })
 
             }, continuation::resumeWithException)
+        }
+    }
         }
     }
 

@@ -3,6 +3,7 @@ package de.synyx.calenope.organizer.middleware
 import android.content.Context
 import android.content.Intent
 import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Middleware
 import com.encodeering.conflate.experimental.api.Middleware.Connection
 import com.encodeering.conflate.experimental.api.Middleware.Interceptor
 import de.synyx.calenope.organizer.State
@@ -10,7 +11,7 @@ import de.synyx.calenope.organizer.State
 /**
  * @author clausen - clausen@synyx.de
  */
-class FlowMiddleware (dispatch : (Action) -> Unit) : Middleware (dispatch) {
+class FlowMiddleware : Middleware<State> {
 
     interface Open {
         val context : Context

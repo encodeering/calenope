@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.widget.Toast
 import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Middleware
 import com.encodeering.conflate.experimental.api.Middleware.Connection
 import com.encodeering.conflate.experimental.api.Middleware.Interceptor
 import com.encodeering.conflate.experimental.api.Storage
@@ -13,12 +14,14 @@ import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.Synchronize
 import de.synyx.calenope.organizer.toast
+import kotlinx.coroutines.experimental.launch
+import kotlin.coroutines.experimental.EmptyCoroutineContext
 
 /**
  * @author clausen - clausen@synyx.de
  */
 
-class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit) : Middleware (dispatch) {
+class DataMiddleware (private val context : Context) : Middleware<State> {
 
     companion object {
         private val DATA = "data"
@@ -33,18 +36,18 @@ class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit
     private val settings
         by lazy { context.getSharedPreferences ("organizer-settings", Context.MODE_PRIVATE) }
 
+    override fun interceptor (connection : Middleware.Connection<State>) : Middleware.Interceptor {
+        return object : Middleware.Interceptor {
+
     private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
         when (key) {
-            property (R.string.account) -> fire (Synchronize ())
+            property (R.string.account) -> launch (EmptyCoroutineContext) { connection.initial (Synchronize ()) }
         }
     }
 
     init {
         settings.registerOnSharedPreferenceChangeListener (settingsupdate)
     }
-
-    override fun interceptor (connection : Connection<State>) : Interceptor {
-        return object : Interceptor {
 
             suspend override fun dispatch(action : Action) {
                 when (action) {

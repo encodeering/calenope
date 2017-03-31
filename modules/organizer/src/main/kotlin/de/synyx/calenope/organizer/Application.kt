@@ -38,7 +38,7 @@ class Application () : android.app.Application () {
 
         self = this
 
-        store = conflate (State.Default (), State, GoogleMiddleware (this, dispatch), FlowMiddleware (dispatch), DataMiddleware (this, dispatch), if (debuggable ()) Logging (log = { text, action -> Log.d (TAG, "$text $action") }) else NoopMiddleware (dispatch))
+        store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logging (log = { text, action -> Log.d (TAG, "$text $action") }) else NoopMiddleware ())
         store.subscribe { Anvil.render () }
 
         dispatch (Synchronize ())
