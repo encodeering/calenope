@@ -11,15 +11,15 @@ buildscript {
         mavenCentral ()
     }
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinversion"
     }
 }
 
 dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinversion"
 
-    compile project (':modules:core')
-    compile project (':modules:core.google')
+    compile project (':core')
+    compile project (':core.google')
 
     compile 'com.google.api-client:google-api-client:1.22.0'
     compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'

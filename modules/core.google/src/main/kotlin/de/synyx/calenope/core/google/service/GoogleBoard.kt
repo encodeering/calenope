@@ -42,7 +42,7 @@ class GoogleBoard constructor (api: GoogleApi) : Board {
 
             resources += calendars?.items ?: emptyList ()
 
-                 token = calendars?.nextPageToken ?: null
+                 token = calendars?.nextPageToken
         } while (token != null)
 
         return resources.map { MemoryCalendar (id = it.resourceName, query = query (it.resourceEmail)) }
@@ -62,7 +62,7 @@ class GoogleBoard constructor (api: GoogleApi) : Board {
 
             resources += calendars?.items ?: emptyList ()
 
-                 token = calendars?.nextPageToken ?: null
+                 token = calendars?.nextPageToken
         } while (token != null)
 
         return resources.map { MemoryCalendar (id = it.id, query = query (it.id)) }

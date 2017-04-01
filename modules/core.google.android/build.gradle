@@ -38,21 +38,22 @@ android {
 
 buildscript {
     repositories {
+        jcenter ()
         mavenCentral ()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.3'
+        classpath "com.android.tools.build:gradle:$gradleandroidversion"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinversion"
     }
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:1.0.3'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinversion"
 
-    compile project (':modules:core')
-    compile project (':modules:core.google')
+    compile project (':core')
+    compile project (':core.google')
 
     compile 'com.google.api-client:google-api-client:1.22.0'
     compile 'com.google.api-client:google-api-client-android:1.22.0'

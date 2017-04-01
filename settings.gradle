@@ -1,6 +1,13 @@
 rootProject.name = 'calenope'
-include ':modules:core'
-include ':modules:core.google'
-include ':modules:core.google.android'
-include ':modules:core.google.standalone'
-include ':modules:organizer'
+
+include 'core'
+include 'core.google'
+include 'core.google.android'
+include 'core.google.standalone'
+include 'organizer'
+
+project (":core").projectDir = file ("modules/core")
+project (":core.google").projectDir = file ("modules/core.google")
+project (":core.google.android").projectDir = file ("modules/core.google.android")
+project (":core.google.standalone").projectDir = file ("modules/core.google.standalone")
+project (":organizer").projectDir = file ("modules/organizer")
