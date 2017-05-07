@@ -1,14 +1,12 @@
 package de.synyx.calenope.organizer
 
-import android.util.Log
 import com.encodeering.conflate.experimental.android.conflate
+import com.encodeering.conflate.experimental.android.logging
 import com.encodeering.conflate.experimental.api.Action
 import com.encodeering.conflate.experimental.api.Storage
-import com.encodeering.conflate.experimental.logging.Logging
 import de.synyx.calenope.organizer.middleware.DataMiddleware
 import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
-import de.synyx.calenope.organizer.middleware.NoopMiddleware
 import trikita.anvil.Anvil
 import android.app.Application as Android
 
@@ -38,7 +36,7 @@ class Application () : android.app.Application () {
 
         self = this
 
-        store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), if (debuggable ()) Logging (log = { text, action -> Log.d (TAG, "$text $action") }) else NoopMiddleware ())
+        store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
         store.subscribe { Anvil.render () }
 
         dispatch (Synchronize ())
