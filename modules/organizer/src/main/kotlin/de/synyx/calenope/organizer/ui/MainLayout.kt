@@ -8,9 +8,12 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
 import android.widget.LinearLayout
-import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.OpenSettings
+import de.synyx.calenope.organizer.OpenWeekview
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.SelectCalendar
+import de.synyx.calenope.organizer.SynchronizeAccount
 import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.init
@@ -87,8 +90,8 @@ class MainLayout (private val main : Main) : RenderableView (main) {
 
                 onClick {
                     run {
-                        store.dispatch (Action.SelectCalendar (item as String? ?: ""))
-                        store.dispatch (Action.OpenWeekview (main))
+                        store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
+                        store.dispatcher.dispatch (OpenWeekview (main))
                     }
                 }
             }
@@ -116,7 +119,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                         toolbar.setOnMenuItemClickListener { item ->
                             when (item.itemId) {
                                 R.id.overview_settings_open -> {
-                                    store.dispatch (Action.OpenSettings (main))
+                                    store.dispatcher.dispatch (OpenSettings (main))
                                     true
                                 }
                                 else -> false
@@ -140,7 +143,7 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 layoutParams (scrolling)
 
                 refreshing (store.state.overview.synchronizing)
-                onRefresh { store.dispatch (Action.SynchronizeAccount ()) }
+                onRefresh { store.dispatcher.dispatch (SynchronizeAccount ()) }
 
                 recyclerView {
                     init {

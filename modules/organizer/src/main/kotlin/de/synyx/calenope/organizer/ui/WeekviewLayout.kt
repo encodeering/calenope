@@ -10,10 +10,11 @@ import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
+import com.encodeering.conflate.experimental.api.Storage
 import de.synyx.calenope.core.api.model.Event
-import de.synyx.calenope.organizer.Action
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -47,8 +48,7 @@ import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.anvil.support.v4.Supportv4DSL.onRefresh
 import trikita.anvil.support.v4.Supportv4DSL.refreshing
 import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
-import trikita.jedux.Store
-import java.util.*
+import java.util.Calendar
 import kotlin.properties.Delegates
 
 /**
@@ -171,7 +171,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                 refreshing (store.state.events.synchronizing)
                 onRefresh {
-                    store.dispatch (Action.SynchronizeCalendar (
+                    store.dispatcher.dispatch (SynchronizeCalendar (
                         year  = week.firstVisibleDay.get (Calendar.YEAR),
                         month = week.firstVisibleDay.get (Calendar.MONTH) + 1
                     ))
@@ -180,7 +180,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Store<Action, *>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>> {
+    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>> {
 
         private val map : MutableMap<Pair<Int, Int>, Pair<DateTime, Collection<V>>> = mutableMapOf ()
 
@@ -189,7 +189,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             val value = map[key]
 
             if (value == null || outdates (value.first)) {
-                store.dispatch (Action.SynchronizeCalendar (year, month))
+                store.dispatcher.dispatch (SynchronizeCalendar (year, month))
             }
 
             return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()

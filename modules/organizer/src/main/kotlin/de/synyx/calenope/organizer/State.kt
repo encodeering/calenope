@@ -1,8 +1,8 @@
 package de.synyx.calenope.organizer
 
+import com.encodeering.conflate.experimental.api.Action
 import de.synyx.calenope.core.api.model.Event
 import org.joda.time.DateTime
-import trikita.jedux.Store
 import java.util.Collections.singletonMap
 
 /**
@@ -37,36 +37,36 @@ interface State {
                    val name : String = ""
     )
 
-    companion object Reducer : Store.Reducer<Action, State> {
+    companion object Reducer : com.encodeering.conflate.experimental.api.Reducer<State> {
 
-        override fun reduce  (action : Action, previous : State) : State =
-            when (previous) {
-                is Default -> previous.copy (overview = overview (action, previous.overview),
-                                             setting  = setting  (action, previous.setting),
-                                             events   = events   (action, previous.events))
-                else       -> previous
+        override fun reduce (action : Action, state : State) : State =
+            when (state) {
+                is Default -> state.copy (overview = overview (action, state.overview),
+                                          setting  = setting  (action, state.setting),
+                                          events   = events   (action, state.events))
+                else       -> state
             }
 
         private fun events   (action : Action, events : State.Events) : Events =
             when (action) {
-                is Action.Synchronize       -> action.state.events
-                is Action.SynchronizeCalendar ->            events.copy (map = events.map.plus (singletonMap (action.key, Pair (action.timestamp, action.events))), synchronizing = action.synchronizing)
-                is Action.SelectCalendar    ->              events.copy (map = emptyMap (), name = action.name)
-                else                        ->              events
+                is Synchronize         -> action.state.events
+                is SynchronizeCalendar ->              events.copy (map = events.map.plus (singletonMap (action.key, Pair (action.timestamp, action.events))), synchronizing = action.synchronizing)
+                is SelectCalendar      ->              events.copy (map = emptyMap (), name = action.name)
+                else                   ->              events
             }
 
         private fun setting  (action : Action, setting : State.Setting) : Setting  =
             when (action) {
-                is Action.Synchronize   -> action.state.setting
-                else                    ->              setting
+                is Synchronize   -> action.state.setting
+                else             ->              setting
             }
 
         private fun overview (action : Action, overview : State.Overview) : Overview =
             when (action) {
-                is Action.Synchronize        -> action.state.overview
-                is Action.SynchronizeAccount ->              overview.copy (calendars = action.calendars, synchronizing = action.synchronizing)
-                is Action.SelectCalendar     ->              overview.copy (selection = action.name)
-                else                         ->              overview
+                is Synchronize        -> action.state.overview
+                is SynchronizeAccount ->              overview.copy (calendars = action.calendars, synchronizing = action.synchronizing)
+                is SelectCalendar     ->              overview.copy (selection = action.name)
+                else                  ->              overview
             }
 
     }

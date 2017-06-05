@@ -3,18 +3,25 @@ package de.synyx.calenope.organizer.middleware
 import android.content.Context
 import android.content.SharedPreferences
 import android.widget.Toast
+import com.encodeering.conflate.experimental.api.Action
+import com.encodeering.conflate.experimental.api.Middleware
+import com.encodeering.conflate.experimental.api.Middleware.Connection
+import com.encodeering.conflate.experimental.api.Middleware.Interceptor
+import com.encodeering.conflate.experimental.api.Storage
 import com.google.gson.GsonBuilder
-import de.synyx.calenope.organizer.Action
+import de.synyx.calenope.organizer.Application.Companion.store
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State
+import de.synyx.calenope.organizer.Synchronize
 import de.synyx.calenope.organizer.toast
-import trikita.jedux.Store
+import kotlinx.coroutines.experimental.launch
+import kotlin.coroutines.experimental.EmptyCoroutineContext
 
 /**
  * @author clausen - clausen@synyx.de
  */
 
-class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit) : Middleware (dispatch) {
+class DataMiddleware (private val context : Context) : Middleware<State> {
 
     companion object {
         private val DATA = "data"
@@ -29,23 +36,29 @@ class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit
     private val settings
         by lazy { context.getSharedPreferences ("organizer-settings", Context.MODE_PRIVATE) }
 
-    private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
-        when (key) {
-            property (R.string.account) -> fire (Action.Synchronize ())
+    override fun interceptor (connection : Middleware.Connection<State>) : Middleware.Interceptor {
+        return object : Middleware.Interceptor {
+
+            private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
+                when (key) {
+                    property (R.string.account) -> launch (EmptyCoroutineContext) { connection.initial (Synchronize ()) }
+                }
+            }
+
+            init {
+                settings.registerOnSharedPreferenceChangeListener (settingsupdate)
+            }
+
+            suspend override fun dispatch(action : Action) {
+                when (action) {
+                    is Synchronize -> connection.next (action.copy (store.load ()))
+                    else           -> connection.next (action)
+                }
+
+                store.save ()
+            }
+
         }
-    }
-
-    init {
-        settings.registerOnSharedPreferenceChangeListener (settingsupdate)
-    }
-
-    override fun dispatch (store : Store<Action, State>, action : Action, next : Store.NextDispatcher<Action>) {
-        when (action) {
-            is Action.Synchronize -> next.dispatch (action.copy (store.load ()))
-            else                  -> next.dispatch (action)
-        }
-
-        store.save ()
     }
 
     private fun SharedPreferences.getString (id : Int, default : String? = null) : String {
@@ -56,7 +69,7 @@ class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit
         return State.Setting (account = settings.getString (R.string.account, null))
     }
 
-    private fun Store<Action, State>.load () : State {
+    private fun Storage<State>.load () : State {
         try {
             return gson.fromJson (this@DataMiddleware.state.getString (DATA, ""), State.Default::class.java).copy (setting = settings.load ())
         } catch (e : Exception) {
@@ -64,7 +77,7 @@ class DataMiddleware (private val context : Context, dispatch : (Action) -> Unit
         }
     }
 
-    private fun Store<Action, State>.save () {
+    private fun Storage<State>.save () {
         try {
             this@DataMiddleware.state.edit ().putString (DATA, gson.toJson (this.state)).commit ()
         } catch (e : Exception) {
