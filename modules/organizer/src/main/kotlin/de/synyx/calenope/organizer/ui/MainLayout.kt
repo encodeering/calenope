@@ -13,6 +13,7 @@ import de.synyx.calenope.organizer.OpenSettings
 import de.synyx.calenope.organizer.OpenWeekview
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.SelectCalendar
+import de.synyx.calenope.organizer.State.Overview
 import de.synyx.calenope.organizer.SynchronizeAccount
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.init
@@ -68,7 +69,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
     init {
         subscription = store.subscribe {
-            tiles.update (store.state.overview.calendars)
+            tiles.update (store.state.overview)
         }
     }
 
@@ -80,8 +81,8 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         overview ()
     }
 
-    private val tiles : RxRenderableAdapter<String> by lazy {
-        RxRenderableAdapter<String> { item, position ->
+    private val tiles : RenderableAdapter by lazy {
+        RenderableAdapter { item, position ->
             cardView {
                 size (MATCH, MATCH)
 
@@ -163,9 +164,9 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         }
     }
 
-    private class RxRenderableAdapter<in T : Comparable<T>> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
+    private class RenderableAdapter (private val view : (value : String, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
 
-        private var last : Collection<T> = emptyList ()
+        private var last = emptyList<String> ()
 
         override fun view (holder : RecyclerView.ViewHolder) {
             val                   position = holder.layoutPosition
@@ -174,8 +175,8 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
         override fun getItemCount () : Int = last.size
 
-        fun update (calendars : Collection<T>) {
-            last = calendars.sorted ()
+        fun update (overview : Overview) {
+            last = overview.calendars.sorted ()
             notifyDataSetChanged ()
         }
 

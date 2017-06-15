@@ -14,6 +14,7 @@ import com.encodeering.conflate.experimental.api.Storage
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
@@ -63,7 +64,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             params
     }
 
-    private lateinit var events : MonthLoaderAdapter<Event>
+    private lateinit var events : MonthLoaderAdapter
 
     private lateinit var week : WeekView
 
@@ -73,7 +74,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
     init {
         subscription = store.subscribe {
-            events.update (store.state.events.map)
+            events.update (store.state.events)
         }
     }
 
@@ -154,7 +155,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             }
                         }
 
-                        events = MonthLoaderAdapter<Event> (week, store)
+                        events = MonthLoaderAdapter (week, store)
 
                             week.monthChangeListener         = events
                             week.numberOfVisibleDays         = 1
@@ -186,9 +187,9 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private class MonthLoaderAdapter<in V : Event> (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener {
+    private class MonthLoaderAdapter (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener {
 
-        private val map : MutableMap<Pair<Int, Int>, Pair<DateTime, Collection<V>>> = mutableMapOf ()
+        private val map = mutableMapOf<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> ()
 
         override fun onMonthChange     (year : Int, month : Int) : List<WeekViewEvent>? {
             val             key = Pair (year,       month)
@@ -201,8 +202,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
         }
 
-        fun update (events : Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>) {
-            map += events
+        fun update (events : Events) {
+            map += events.map
             week.notifyDatasetChanged ()
         }
 
