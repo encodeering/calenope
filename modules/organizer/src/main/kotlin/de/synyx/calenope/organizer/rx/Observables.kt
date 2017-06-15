@@ -9,6 +9,6 @@ import java.util.concurrent.TimeUnit
  * @author clausen - clausen@synyx.de
  */
 
-fun <R> delay (delay : Long = 0, action : () -> R) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ()).map { action () }
+fun <R> delay (delay : Long = 0, action : () -> R) = Observable.timer (delay, TimeUnit.MILLISECONDS, Schedulers.io ()).map { action () }!!
 
-fun <T> Observable<T>.eventloop () = this.observeOn (AndroidSchedulers.mainThread ())
+fun <T> Observable<T>.eventloop () = this.observeOn (AndroidSchedulers.mainThread ())!!

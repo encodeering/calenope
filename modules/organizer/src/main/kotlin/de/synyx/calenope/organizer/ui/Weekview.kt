@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity
  * @author clausen - clausen@synyx.de
  */
 
-class Weekview () : AppCompatActivity () {
+class Weekview : AppCompatActivity () {
 
     private lateinit var layout : WeekviewLayout
 

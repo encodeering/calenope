@@ -10,7 +10,7 @@ import com.google.android.gms.common.AccountPicker
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import de.synyx.calenope.organizer.R
 
-class SettingsLayout () : PreferenceFragment () {
+class SettingsLayout : PreferenceFragment () {
 
     fun Preference.update (value : String?) {
         this.summary =     value
@@ -61,7 +61,7 @@ class SettingsLayout () : PreferenceFragment () {
     private fun account () {
         this.account.update (value (account.key, ""))
 
-        this.account.onPreferenceClickListener = Preference.OnPreferenceClickListener { preference ->
+        this.account.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             startActivityForResult(AccountPicker.newChooseAccountIntent (null, null, arrayOf(GoogleAccountManager.ACCOUNT_TYPE), true, null, null, null, null), ACCOUNT)
             true
         }
