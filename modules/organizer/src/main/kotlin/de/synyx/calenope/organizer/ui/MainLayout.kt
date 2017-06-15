@@ -3,16 +3,21 @@ package de.synyx.calenope.organizer.ui
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.v4.graphics.ColorUtils
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.Toolbar
+import android.view.ActionMode
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.OpenSettings
 import de.synyx.calenope.organizer.OpenWeekview
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.SelectCalendar
+import de.synyx.calenope.organizer.SelectCalendarFilter
 import de.synyx.calenope.organizer.State.Overview
 import de.synyx.calenope.organizer.SynchronizeAccount
 import trikita.anvil.Anvil
@@ -26,6 +31,7 @@ import trikita.anvil.DSL.gravity
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.onClick
+import trikita.anvil.DSL.onLongClick
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
@@ -81,7 +87,41 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         overview ()
     }
 
+    private class FilterCallback (val done : (Boolean) -> Unit) : ActionMode.Callback {
+
+        var backbutton = true
+
+        override fun onCreateActionMode (mode : ActionMode, menu : Menu) : Boolean {
+            mode.title = "Filter Calendar"
+            mode.menuInflater.inflate (R.menu.overview_filter, menu)
+
+            return true
+        }
+
+        override fun onPrepareActionMode (mode : ActionMode, menu : Menu) : Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked (mode : ActionMode, item : MenuItem) : Boolean {
+            when (item.itemId) {
+                R.id.overview_settings_filter_update -> {
+                    backbutton = false
+                    mode.finish ()
+                }
+            }
+
+            return true
+        }
+
+        override fun onDestroyActionMode (mode : ActionMode) {
+            done (backbutton)
+        }
+
+    }
+
     private val tiles : RenderableAdapter by lazy {
+        var modeback : ActionMode.Callback? = null
+
         RenderableAdapter { item, position ->
             cardView {
                 size (MATCH, MATCH)
@@ -94,15 +134,36 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                     size (MATCH, MATCH)
                     text (item)
                     textSize (sip (10.toFloat()))
-                    textColor (Color.BLACK)
+                    textColor (if (! store.state.overview.filtering || tiles.selected (position)) Color.BLACK else ColorUtils.setAlphaComponent (Color.GRAY, 200))
                     centerHorizontal ()
                     margin (dip (20))
                 }
 
-                onClick {
-                    run {
-                        store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
-                        store.dispatcher.dispatch (OpenWeekview (main))
+                onLongClick {
+                    if (modeback == null)
+                        modeback = FilterCallback {
+                                                                                                backbutton ->
+                            store.dispatcher.dispatch (SelectCalendarFilter (false, stash = if (backbutton) store.state.overview.stash else tiles.selection (false)))
+                            modeback = null
+                        }.apply {
+                            startActionMode (this)
+                            store.dispatcher.dispatch (SelectCalendarFilter (true))
+                        }
+
+                    true
+                }
+
+                if (store.state.overview.filtering) {
+                    onClick {
+                        tiles.toggle (position)
+                    }
+                }
+                else {
+                    onClick {
+                        run {
+                            store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
+                            store.dispatcher.dispatch (OpenWeekview (main))
+                        }
                     }
                 }
             }
@@ -136,7 +197,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                         val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
                             lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
 
-                        main.setTheme (R.style.AppTheme_AppBarOverlay)
+                        main.setTheme (R.style.AppTheme_NoActionBar)
                     }
 
                     title (store.state.setting.account)
@@ -166,17 +227,34 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
     private class RenderableAdapter (private val view : (value : String, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
 
+        private var filtering = false
+
         private var last = emptyList<String> ()
+        private var selections = mutableMapOf<Int, Boolean> ()
+
+        private val visibles : Collection<String>
+            get () = if (filtering) last else selection (true)
 
         override fun view (holder : RecyclerView.ViewHolder) {
-            val                   position = holder.layoutPosition
-            view (last.elementAt (position), position)
+            val                       position = holder.layoutPosition
+            view (visibles.elementAt (position), position)
         }
 
-        override fun getItemCount () : Int = last.size
+        override fun getItemCount () : Int = visibles.size
+
+        fun selection (eq : Boolean)   = selections.filter { (_, v) -> v == eq }.keys.map (last::elementAt)
+
+        fun selected  (position : Int) = selections[position] ?: true
+
+        fun toggle    (position : Int) {
+            selections[position] = ! selected (position)
+            notifyDataSetChanged ()
+        }
 
         fun update (overview : Overview) {
             last = overview.calendars.sorted ()
+            selections = last.mapIndexed { idx, name -> idx to ! overview.stash.contains (name) }.toMap (mutableMapOf ())
+            filtering  = overview.filtering
             notifyDataSetChanged ()
         }
 
