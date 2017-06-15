@@ -71,6 +71,12 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
             params
     }
 
+    companion object {
+
+        val fallback = "Nothing selected"
+
+    }
+
     private val subscription : Runnable
 
     init {
@@ -159,7 +165,8 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                     }
                 }
                 else {
-                    onClick {
+                    if (item == fallback) onClick {}
+                    else                  onClick {
                         run {
                             store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
                             store.dispatcher.dispatch (OpenWeekview (main))
@@ -228,12 +235,13 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
     private class RenderableAdapter (private val view : (value : String, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
 
         private var filtering = false
+        private var synchronizing = false
 
         private var last = emptyList<String> ()
         private var selections = mutableMapOf<Int, Boolean> ()
 
         private val visibles : Collection<String>
-            get () = if (filtering) last else selection (true)
+            get () = (if (filtering) last else selection (true)).run { if (isEmpty () && ! synchronizing) listOf (fallback) else this }
 
         override fun view (holder : RecyclerView.ViewHolder) {
             val                       position = holder.layoutPosition
@@ -255,6 +263,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
             last = overview.calendars.sorted ()
             selections = last.mapIndexed { idx, name -> idx to ! overview.stash.contains (name) }.toMap (mutableMapOf ())
             filtering  = overview.filtering
+            synchronizing = overview.synchronizing
             notifyDataSetChanged ()
         }
 
