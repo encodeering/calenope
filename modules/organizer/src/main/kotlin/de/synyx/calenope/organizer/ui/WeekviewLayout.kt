@@ -19,7 +19,6 @@ import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
-import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
@@ -74,7 +73,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
     init {
         subscription = store.subscribe {
-            events.onNext (store.state.events.map)
+            events.update (store.state.events.map)
         }
     }
 
@@ -187,7 +186,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>> {
+    private class MonthLoaderAdapter<in V : Event> (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener {
 
         private val map : MutableMap<Pair<Int, Int>, Pair<DateTime, Collection<V>>> = mutableMapOf ()
 
@@ -202,17 +201,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
         }
 
-        override fun onNext (t : Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>) {
-            map += t
-            week.notifyDatasetChanged ()
-        }
-
-        override fun onCompleted () {
-            week.notifyDatasetChanged ()
-        }
-
-        override fun onError (e : Throwable) {
-            map.clear ()
+        fun update (events : Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>) {
+            map += events
             week.notifyDatasetChanged ()
         }
 

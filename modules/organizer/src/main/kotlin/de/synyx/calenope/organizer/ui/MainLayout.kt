@@ -14,7 +14,6 @@ import de.synyx.calenope.organizer.OpenWeekview
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.SelectCalendar
 import de.synyx.calenope.organizer.SynchronizeAccount
-import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.init
 import trikita.anvil.DSL.CENTER
@@ -69,7 +68,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
     init {
         subscription = store.subscribe {
-            tiles.onNext (store.state.overview.calendars)
+            tiles.update (store.state.overview.calendars)
         }
     }
 
@@ -164,7 +163,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         }
     }
 
-    private class RxRenderableAdapter<T : Comparable<T>> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter (), Observer<Collection<T>> {
+    private class RxRenderableAdapter<in T : Comparable<T>> (private val view : (value : T, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
 
         private var last : Collection<T> = emptyList ()
 
@@ -175,17 +174,8 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
         override fun getItemCount () : Int = last.size
 
-        override fun onNext (t : Collection<T>) {
-            last = t.sorted ()
-            notifyDataSetChanged ()
-        }
-
-        override fun onCompleted () {
-            notifyDataSetChanged ()
-        }
-
-        override fun onError (e : Throwable?) {
-            last = emptyList ()
+        fun update (calendars : Collection<T>) {
+            last = calendars.sorted ()
             notifyDataSetChanged ()
         }
 
