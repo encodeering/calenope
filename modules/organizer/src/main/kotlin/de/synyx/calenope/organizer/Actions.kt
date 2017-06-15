@@ -25,6 +25,8 @@ data class SynchronizeCalendar (val year : Int, val month : Int, val timestamp :
 
 data class SelectCalendar (val name : String) : Action
 
+data class SelectCalendarFilter (val filtering : Boolean = true, val stash : Collection<String>? = null) : Action
+
 data class Open           (override val context : Context, override val screen : Class<out Context>) : FlowMiddleware.Open, Action
 
 data class OpenSettings   (override val context : Context) : FlowMiddleware.Open by Open (context, Settings::class.java), Action
