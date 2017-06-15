@@ -2,6 +2,8 @@ package de.synyx.calenope.organizer
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.support.v4.content.ContextCompat
+import android.view.View
 import android.widget.Toast
 
 /**
@@ -17,3 +19,5 @@ fun Context.toast        (message : CharSequence, duration : Int = Toast.LENGTH_
 }
 
 fun Context.debuggable () = 0 != applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+
+fun View.color (resource : Int) = ContextCompat.getColor (context, resource)

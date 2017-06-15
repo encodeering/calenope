@@ -3,7 +3,6 @@ package de.synyx.calenope.organizer.ui
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
-import android.support.v4.graphics.ColorUtils
 import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -20,6 +19,7 @@ import de.synyx.calenope.organizer.SelectCalendar
 import de.synyx.calenope.organizer.SelectCalendarFilter
 import de.synyx.calenope.organizer.State.Overview
 import de.synyx.calenope.organizer.SynchronizeAccount
+import de.synyx.calenope.organizer.color
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.init
 import trikita.anvil.DSL.CENTER
@@ -130,17 +130,17 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
         RenderableAdapter { item, position ->
             cardView {
-                size (MATCH, MATCH)
+                size (MATCH, dip (64))
 
                 gravity (CENTER)
 
-                margin (dip (5), dip (5))
+                margin (dip (0), dip (1))
 
                 textView {
                     size (MATCH, MATCH)
                     text (item)
                     textSize (sip (10.toFloat()))
-                    textColor (if (! store.state.overview.filtering || tiles.selected (position)) Color.BLACK else ColorUtils.setAlphaComponent (Color.GRAY, 200))
+                    textColor (if (! store.state.overview.filtering || tiles.selected (position)) color (R.color.primary_text) else color (R.color.secondary_text))
                     centerHorizontal ()
                     margin (dip (20))
                 }
@@ -224,7 +224,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                     init {
                         layoutManager (LinearLayoutManager (context, LinearLayoutManager.VERTICAL, false))
                         itemAnimator  (DefaultItemAnimator ())
-                        gridLayoutManager (2)
+                        gridLayoutManager (1)
                         adapter       (tiles)
                     }
                 }

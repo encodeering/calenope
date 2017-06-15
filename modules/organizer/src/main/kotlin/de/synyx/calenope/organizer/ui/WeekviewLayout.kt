@@ -16,6 +16,7 @@ import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
+import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -26,7 +27,6 @@ import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.v
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
-import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.init
 import trikita.anvil.DSL.layoutParams
@@ -112,7 +112,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     }
 
                     imageView {
-                        size (MATCH, WRAP)
+                        size (MATCH, dip (200))
 
                         init {
                             val imageView = Anvil.currentView<ImageView> ()
@@ -120,7 +120,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
                         }
 
-                        imageResource (R.drawable.background)
                         scaleType (ImageView.ScaleType.CENTER_CROP)
                     }
 
@@ -165,12 +164,18 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             week.headerRowPadding            = dip (12)
                             week.textSize                    = sip (10)
                             week.eventTextSize               = sip (10)
-                            week.eventTextColor              = Color.WHITE
-                            week.headerColumnTextColor       = Color.parseColor ("#8f000000")
-                            week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
-                            week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
-                            week.dayBackgroundColor          = Color.parseColor ("#05000000")
-                            week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                            week.eventTextColor              = color (R.color.primary_text)
+                            week.defaultEventColor           = color (R.color.primary)
+
+                            week.headerColumnTextColor       = color (R.color.primary_text)
+                            week.headerColumnBackgroundColor = color (R.color.primary_dark)
+                            week.headerRowBackgroundColor    = color (R.color.primary_dark)
+
+                            week.dayBackgroundColor          = color (R.color.primary_light)
+                            week.todayBackgroundColor        = color (R.color.primary_light)
+                            week.todayHeaderTextColor        = color (R.color.primary_text)
+
+                            week.hourSeparatorColor          = color (R.color.divider)
                     }
                 }
 
