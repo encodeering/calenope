@@ -55,7 +55,7 @@ import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
  * @author clausen - clausen@synyx.de
  */
 
-class MainLayout (private val main : Main) : RenderableView (main) {
+class MainLayout (private val main : Main) : RenderableView (main), AutoCloseable {
 
     private val store by lazy { Application.store }
 
@@ -65,9 +65,20 @@ class MainLayout (private val main : Main) : RenderableView (main) {
             params
     }
 
+    private val subscription : Runnable
+
+    init {
+        subscription = store.subscribe {
+            tiles.onNext (store.state.overview.calendars)
+        }
+    }
+
+    override fun close () {
+        subscription.run ()
+    }
+
     override fun view () {
         overview ()
-        bind ()
     }
 
     private val tiles : RxRenderableAdapter<String> by lazy {
@@ -96,10 +107,6 @@ class MainLayout (private val main : Main) : RenderableView (main) {
                 }
             }
         }
-    }
-
-    private fun bind () {
-        tiles.onNext (store.state.overview.calendars)
     }
 
     private fun overview () {

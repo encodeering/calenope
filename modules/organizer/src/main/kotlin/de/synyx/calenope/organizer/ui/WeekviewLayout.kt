@@ -54,7 +54,7 @@ import kotlin.properties.Delegates
 /**
  * @author clausen - clausen@synyx.de
  */
-class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview) {
+class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview), AutoCloseable {
 
     private val store by lazy { Application.store }
 
@@ -70,13 +70,20 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
     private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
 
-    override fun view () {
-        weekview ()
-        bind ()
+    private val subscription : Runnable
+
+    init {
+        subscription = store.subscribe {
+            events.onNext (store.state.events.map)
+        }
     }
 
-    private fun bind () {
-        events.onNext (store.state.events.map)
+    override fun close () {
+        subscription.run ()
+    }
+
+    override fun view () {
+        weekview ()
     }
 
     private fun weekview () {

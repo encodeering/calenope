@@ -21,10 +21,23 @@ class Main : AppCompatActivity () {
         private val PERMISSION = 1000
     }
 
+    private lateinit var layout : MainLayout
+
     override fun onCreate (bundle : Bundle?) {
         super.onCreate    (bundle)
 
-        setContentView (MainLayout (this))
+        layout = MainLayout (this)
+
+        setContentView (layout)
+    }
+
+    override fun onDestroy () {
+        try {
+            layout.close ()
+        } finally {
+            super.onDestroy ()
+        }
+
     }
 
     override fun onResume () {
