@@ -8,6 +8,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.Synchronize
 import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.toast
 
@@ -30,6 +31,7 @@ class Main : AppCompatActivity () {
         super.onResume ()
 
         authorize ()
+        Application.dispatch (Synchronize ())
     }
 
     private fun authorize () {

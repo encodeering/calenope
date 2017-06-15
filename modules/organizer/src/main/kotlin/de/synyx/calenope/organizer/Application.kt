@@ -38,8 +38,6 @@ class Application () : android.app.Application () {
 
         store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
         store.subscribe { Anvil.render () }
-
-        dispatch (Synchronize ())
     }
 
 }
