@@ -93,15 +93,14 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
             appBarLayout {
                 size (MATCH, WRAP)
-
                 expanded (false)
 
                 collapsingToolbarLayout {
-                    size (MATCH, MATCH)
-
                     anvilonce<CollapsingToolbarLayout> {
                         val params = layoutParams as AppBarLayout.LayoutParams
                             params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+
+                        size (MATCH, MATCH)
 
                         title (store.state.events.name)
                         titleEnabled (true)
@@ -111,25 +110,23 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     }
 
                     imageView {
-                        size (MATCH, dip (200))
-
                         anvilonce<ImageView> {
                             val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
-                        }
 
-                        scaleType (ImageView.ScaleType.CENTER_CROP)
+                            size (MATCH, dip (200))
+                            scaleType (ImageView.ScaleType.CENTER_CROP)
+                        }
                     }
 
                     toolbar {
-                        size (MATCH, dip (56))
-
                         anvilonce<Toolbar> {
                             val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
-                        }
 
-                        popupTheme(R.style.AppTheme_PopupOverlay)
+                            size (MATCH, dip (56))
+                            popupTheme (R.style.AppTheme_PopupOverlay)
+                        }
                     }
                 }
             }
