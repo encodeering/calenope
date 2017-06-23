@@ -8,6 +8,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.Synchronize
 import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.toast
 
@@ -20,16 +21,30 @@ class Main : AppCompatActivity () {
         private val PERMISSION = 1000
     }
 
+    private lateinit var layout : MainLayout
+
     override fun onCreate (bundle : Bundle?) {
         super.onCreate    (bundle)
 
-        setContentView (MainLayout (this))
+        layout = MainLayout (this)
+
+        setContentView (layout)
+    }
+
+    override fun onDestroy () {
+        try {
+            layout.close ()
+        } finally {
+            super.onDestroy ()
+        }
+
     }
 
     override fun onResume () {
         super.onResume ()
 
         authorize ()
+        Application.dispatch (Synchronize ())
     }
 
     private fun authorize () {

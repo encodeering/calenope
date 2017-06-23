@@ -5,8 +5,6 @@ import android.content.SharedPreferences
 import android.widget.Toast
 import com.encodeering.conflate.experimental.api.Action
 import com.encodeering.conflate.experimental.api.Middleware
-import com.encodeering.conflate.experimental.api.Middleware.Connection
-import com.encodeering.conflate.experimental.api.Middleware.Interceptor
 import com.encodeering.conflate.experimental.api.Storage
 import com.google.gson.GsonBuilder
 import de.synyx.calenope.organizer.Application.Companion.store
@@ -39,7 +37,7 @@ class DataMiddleware (private val context : Context) : Middleware<State> {
     override fun interceptor (connection : Middleware.Connection<State>) : Middleware.Interceptor {
         return object : Middleware.Interceptor {
 
-            private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { preferences, key ->
+            private val settingsupdate = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
                 when (key) {
                     property (R.string.account) -> launch (EmptyCoroutineContext) { connection.initial (Synchronize ()) }
                 }

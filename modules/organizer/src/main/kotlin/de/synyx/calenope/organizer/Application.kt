@@ -14,11 +14,9 @@ import android.app.Application as Android
  * @author clausen - clausen@synyx.de
  */
 
-class Application () : android.app.Application () {
+class Application : android.app.Application () {
 
     companion object {
-
-        private val TAG = Application::class.java.name
 
         private var self : Application? = null
 
@@ -38,8 +36,6 @@ class Application () : android.app.Application () {
 
         store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
         store.subscribe { Anvil.render () }
-
-        dispatch (Synchronize ())
     }
 
 }

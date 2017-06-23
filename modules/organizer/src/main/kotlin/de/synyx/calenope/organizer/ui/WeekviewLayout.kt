@@ -14,19 +14,19 @@ import com.encodeering.conflate.experimental.api.Storage
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
+import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
-import rx.Observer
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.v
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
-import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.init
 import trikita.anvil.DSL.layoutParams
@@ -54,7 +54,7 @@ import kotlin.properties.Delegates
 /**
  * @author clausen - clausen@synyx.de
  */
-class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview) {
+class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview), AutoCloseable {
 
     private val store by lazy { Application.store }
 
@@ -64,19 +64,26 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             params
     }
 
-    private lateinit var events : MonthLoaderAdapter<Event>
+    private lateinit var events : MonthLoaderAdapter
 
     private lateinit var week : WeekView
 
     private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
 
-    override fun view () {
-        weekview ()
-        bind ()
+    private val subscription : Runnable
+
+    init {
+        subscription = store.subscribe {
+            events.update (store.state.events)
+        }
     }
 
-    private fun bind () {
-        events.onNext (store.state.events.map)
+    override fun close () {
+        subscription.run ()
+    }
+
+    override fun view () {
+        weekview ()
     }
 
     private fun weekview () {
@@ -105,7 +112,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     }
 
                     imageView {
-                        size (MATCH, WRAP)
+                        size (MATCH, dip (200))
 
                         init {
                             val imageView = Anvil.currentView<ImageView> ()
@@ -113,7 +120,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
                         }
 
-                        imageResource (R.drawable.background)
                         scaleType (ImageView.ScaleType.CENTER_CROP)
                     }
 
@@ -148,7 +154,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             }
                         }
 
-                        events = MonthLoaderAdapter<Event> (week, store)
+                        events = MonthLoaderAdapter (week, store)
 
                             week.monthChangeListener         = events
                             week.numberOfVisibleDays         = 1
@@ -158,12 +164,18 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             week.headerRowPadding            = dip (12)
                             week.textSize                    = sip (10)
                             week.eventTextSize               = sip (10)
-                            week.eventTextColor              = Color.WHITE
-                            week.headerColumnTextColor       = Color.parseColor ("#8f000000")
-                            week.headerColumnBackgroundColor = Color.parseColor ("#ffffffff")
-                            week.headerRowBackgroundColor    = Color.parseColor ("#ffefefef")
-                            week.dayBackgroundColor          = Color.parseColor ("#05000000")
-                            week.todayBackgroundColor        = Color.parseColor ("#1848adff")
+                            week.eventTextColor              = color (R.color.primary_text)
+                            week.defaultEventColor           = color (R.color.primary)
+
+                            week.headerColumnTextColor       = color (R.color.primary_text)
+                            week.headerColumnBackgroundColor = color (R.color.primary_dark)
+                            week.headerRowBackgroundColor    = color (R.color.primary_dark)
+
+                            week.dayBackgroundColor          = color (R.color.primary_light)
+                            week.todayBackgroundColor        = color (R.color.primary_light)
+                            week.todayHeaderTextColor        = color (R.color.primary_text)
+
+                            week.hourSeparatorColor          = color (R.color.divider)
                     }
                 }
 
@@ -180,9 +192,9 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private class MonthLoaderAdapter<V : Event> (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener, Observer<Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>> {
+    private class MonthLoaderAdapter (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener {
 
-        private val map : MutableMap<Pair<Int, Int>, Pair<DateTime, Collection<V>>> = mutableMapOf ()
+        private val map = mutableMapOf<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> ()
 
         override fun onMonthChange     (year : Int, month : Int) : List<WeekViewEvent>? {
             val             key = Pair (year,       month)
@@ -195,17 +207,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
         }
 
-        override fun onNext (t : Map<Pair<Int, Int>, Pair<DateTime, Collection<V>>>) {
-            map += t
-            week.notifyDatasetChanged ()
-        }
-
-        override fun onCompleted () {
-            week.notifyDatasetChanged ()
-        }
-
-        override fun onError (e : Throwable) {
-            map.clear ()
+        fun update (events : Events) {
+            map += events.map
             week.notifyDatasetChanged ()
         }
 

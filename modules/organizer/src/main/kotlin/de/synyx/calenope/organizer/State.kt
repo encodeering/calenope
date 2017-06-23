@@ -23,8 +23,10 @@ interface State {
 
     data class Overview (
         val calendars : Collection<String> = emptyList (),
+        val stash : Collection<String> = emptyList (),
         val selection : String? = null,
-        val synchronizing : Boolean = false
+        val synchronizing : Boolean = false,
+        val filtering : Boolean = false
     )
 
     data class Setting (
@@ -66,6 +68,7 @@ interface State {
                 is Synchronize        -> action.state.overview
                 is SynchronizeAccount ->              overview.copy (calendars = action.calendars, synchronizing = action.synchronizing)
                 is SelectCalendar     ->              overview.copy (selection = action.name)
+                is SelectCalendarFilter ->            overview.copy (filtering = action.filtering, stash = action.stash ?: overview.stash)
                 else                  ->              overview
             }
 

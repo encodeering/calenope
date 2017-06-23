@@ -17,11 +17,11 @@ import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.rx.delay
 import de.synyx.calenope.organizer.rx.eventloop
+import kotlinx.coroutines.experimental.launch
 import org.joda.time.DateTime
 import rx.Observable
 import java.util.ServiceLoader
 import java.util.TimeZone
-import kotlinx.coroutines.experimental.launch
 import kotlin.coroutines.experimental.Continuation
 import kotlin.coroutines.experimental.EmptyCoroutineContext
 import kotlin.coroutines.experimental.startCoroutine
@@ -39,13 +39,13 @@ class GoogleMiddleware(private val application : Application) : Middleware<State
     override fun interceptor (connection : Connection<State>) : Interceptor {
         return object : Interceptor {
 
-            private var board : Board? by Delegates.observable (null as Board?) { property, previous, next ->
+            private var board : Board? by Delegates.observable (null as Board?) { _, previous, next ->
                 if (next == previous) return@observable
 
                 resynchronize ()
             }
 
-            private var account : String by Delegates.observable ("") { property, previous, next ->
+            private var account : String by Delegates.observable ("") { _, previous, next ->
                 if (next == previous) return@observable
                 if (next.isBlank ())  return@observable
 

@@ -19,7 +19,7 @@ class WeekviewTouchProxy (context : Context) : WeekView (context) {
 
     var scrolling : Scrolling? = null
 
-    var scrollingObservable by Delegates.observable (0.0) { property, previous, next ->
+    var scrollingObservable by Delegates.observable (0.0) { _, _, next ->
         scrolling?.top (abs (next) < 0.1)
     }
 
