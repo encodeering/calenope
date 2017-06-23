@@ -24,16 +24,16 @@ import org.joda.time.Minutes
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
-import trikita.anvil.BaseDSL.v
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
+import trikita.anvil.DSL.id
 import trikita.anvil.DSL.imageView
-import trikita.anvil.DSL.init
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.scaleType
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
+import trikita.anvil.DSL.v
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
@@ -68,8 +68,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
     private lateinit var events : MonthLoaderAdapter
 
-    private lateinit var week : WeekView
-
     private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
 
     private val subscription : Runnable
@@ -101,9 +99,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 collapsingToolbarLayout {
                     size (MATCH, MATCH)
 
-                    init {
-                        val layout = Anvil.currentView<CollapsingToolbarLayout> ()
-                        val params = layout.layoutParams as AppBarLayout.LayoutParams
+                    anvilonce<CollapsingToolbarLayout> {
+                        val params = layoutParams as AppBarLayout.LayoutParams
                             params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
 
                         title (store.state.events.name)
@@ -116,9 +113,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     imageView {
                         size (MATCH, dip (200))
 
-                        init {
-                            val imageView = Anvil.currentView<ImageView> ()
-                            val params = imageView.layoutParams as CollapsingToolbarLayout.LayoutParams
+                        anvilonce<ImageView> {
+                            val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
                         }
 
@@ -128,9 +124,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     toolbar {
                         size (MATCH, dip (56))
 
-                        init {
-                            val toolbar = Anvil.currentView<Toolbar> ()
-                            val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
+                        anvilonce<Toolbar> {
+                            val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
                         }
 
@@ -145,54 +140,55 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 size (MATCH, MATCH)
 
                 v (WeekviewTouchProxy::class.java) {
-                    init {
-                         week = Anvil.currentView<WeekviewTouchProxy> ()
-                        (week as WeekviewTouchProxy).scrolling = object : WeekviewTouchProxy.Scrolling {
+                    anvilonce<WeekviewTouchProxy> {
+                        id (R.id.weekview_proxy)
 
-                            private var previous by vetoable (Double.MIN_VALUE) {
-                                _, previous,                       next ->
-                                   previous == Double.MIN_VALUE || next == Double.MIN_VALUE
-                            }
+                        scrolling = object : WeekviewTouchProxy.Scrolling {
 
-                            override fun top (state : Boolean) {
-                                swipeable = state
-                            }
-
-                            override fun hour (earliest : Double) {
-                                previous = earliest
-
-                                val delta : Double = Math.abs (previous - earliest)
-                                if (delta > 1) {
-                                    reset ()
+                                private var previous by vetoable (Double.MIN_VALUE) {
+                                    _, previous,                       next ->
+                                       previous == Double.MIN_VALUE || next == Double.MIN_VALUE
                                 }
-                            }
 
-                            private fun reset () { previous = Double.MIN_VALUE }
+                                override fun top (state : Boolean) {
+                                    swipeable = state
+                                }
+
+                                override fun hour (earliest : Double) {
+                                    previous = earliest
+
+                                    val delta : Double = Math.abs (previous - earliest)
+                                    if (delta > 1) {
+                                        reset ()
+                                    }
+                                }
+
+                                private fun reset () { previous = Double.MIN_VALUE }
 
                         }
 
-                        events = MonthLoaderAdapter (week, store)
+                        events = MonthLoaderAdapter (this, store)
 
-                            week.monthChangeListener         = events
-                            week.numberOfVisibleDays         = 1
-                            week.columnGap                   = dip (8)
-                            week.hourHeight                  = dip (600)
-                            week.headerColumnPadding         = dip (8)
-                            week.headerRowPadding            = dip (12)
-                            week.textSize                    = sip (10)
-                            week.eventTextSize               = sip (10)
-                            week.eventTextColor              = color (R.color.primary_text)
-                            week.defaultEventColor           = color (R.color.primary)
+                        monthChangeListener         = events
+                        numberOfVisibleDays         = 1
+                        columnGap                   = dip (8)
+                        hourHeight                  = dip (600)
+                        headerColumnPadding         = dip (8)
+                        headerRowPadding            = dip (12)
+                        textSize                    = sip (10)
+                        eventTextSize               = sip (10)
+                        eventTextColor              = color (R.color.primary_text)
+                        defaultEventColor           = color (R.color.primary)
 
-                            week.headerColumnTextColor       = color (R.color.primary_text)
-                            week.headerColumnBackgroundColor = color (R.color.primary_dark)
-                            week.headerRowBackgroundColor    = color (R.color.primary_dark)
+                        headerColumnTextColor       = color (R.color.primary_text)
+                        headerColumnBackgroundColor = color (R.color.primary_dark)
+                        headerRowBackgroundColor    = color (R.color.primary_dark)
 
-                            week.dayBackgroundColor          = color (R.color.primary_light)
-                            week.todayBackgroundColor        = color (R.color.primary_light)
-                            week.todayHeaderTextColor        = color (R.color.primary_text)
+                        dayBackgroundColor          = color (R.color.primary_light)
+                        todayBackgroundColor        = color (R.color.primary_light)
+                        todayHeaderTextColor        = color (R.color.primary_text)
 
-                            week.hourSeparatorColor          = color (R.color.divider)
+                        hourSeparatorColor          = color (R.color.divider)
                     }
                 }
 
@@ -200,10 +196,12 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                 refreshing (store.state.events.synchronizing)
                 onRefresh {
-                    store.dispatcher.dispatch (SynchronizeCalendar (
-                        year  = week.firstVisibleDay.get (Calendar.YEAR),
-                        month = week.firstVisibleDay.get (Calendar.MONTH) + 1
-                    ))
+                    use<WeekviewTouchProxy> (R.id.weekview_proxy) {
+                        store.dispatcher.dispatch (SynchronizeCalendar (
+                            year  = firstVisibleDay.get (Calendar.YEAR),
+                            month = firstVisibleDay.get (Calendar.MONTH) + 1
+                        ))
+                    }
                 }
             }
         }

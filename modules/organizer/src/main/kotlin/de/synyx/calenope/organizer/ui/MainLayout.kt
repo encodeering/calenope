@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar
 import android.view.ActionMode
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.Application
 import de.synyx.calenope.organizer.OpenSettings
@@ -20,8 +21,6 @@ import de.synyx.calenope.organizer.SelectCalendarFilter
 import de.synyx.calenope.organizer.State.Overview
 import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.color
-import trikita.anvil.Anvil
-import trikita.anvil.BaseDSL.init
 import trikita.anvil.DSL.CENTER
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
@@ -188,12 +187,10 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                 size (MATCH, WRAP)
 
                 toolbar {
-                    val toolbar = Anvil.currentView<Toolbar> ()
-
-                    init {
-                        toolbar.minimumHeight = dip (56)
-                        toolbar.inflateMenu (R.menu.overview)
-                        toolbar.setOnMenuItemClickListener { item ->
+                    anvilonce<Toolbar> {
+                        minimumHeight = dip (56)
+                        inflateMenu (R.menu.overview)
+                        setOnMenuItemClickListener { item ->
                             when (item.itemId) {
                                 R.id.overview_settings_open -> {
                                     store.dispatcher.dispatch (OpenSettings (main))
@@ -203,7 +200,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                             }
                         }
 
-                        val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
+                        val lparams = layoutParams as AppBarLayout.LayoutParams
                             lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
                     }
 
@@ -221,7 +218,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                 onRefresh { store.dispatcher.dispatch (SynchronizeAccount ()) }
 
                 recyclerView {
-                    init {
+                    anvilonce<View> {
                         layoutManager (LinearLayoutManager (context, LinearLayoutManager.VERTICAL, false))
                         itemAnimator  (DefaultItemAnimator ())
                         gridLayoutManager (1)
