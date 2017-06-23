@@ -132,8 +132,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             val toolbar = Anvil.currentView<Toolbar> ()
                             val params = toolbar.layoutParams as CollapsingToolbarLayout.LayoutParams
                                 params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
-
-                            weekview.setTheme (R.style.AppTheme_AppBarOverlay)
                         }
 
                         popupTheme(R.style.AppTheme_PopupOverlay)

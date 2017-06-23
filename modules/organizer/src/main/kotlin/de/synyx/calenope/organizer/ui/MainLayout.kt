@@ -205,8 +205,6 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
                         val lparams = toolbar.layoutParams as AppBarLayout.LayoutParams
                             lparams.scrollFlags = lparams.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
-
-                        main.setTheme (R.style.AppTheme_NoActionBar)
                     }
 
                     title (store.state.setting.account)
