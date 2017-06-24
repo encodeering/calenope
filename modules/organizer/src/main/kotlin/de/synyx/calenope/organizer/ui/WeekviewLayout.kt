@@ -213,6 +213,13 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
         private val map = mutableMapOf<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> ()
 
+        private var maphash by Delegates.observable (map.hashCode ()) { _, previous, next ->
+            if (previous == next)
+                return@observable
+
+            week.notifyDatasetChanged ()
+        }
+
         private val identifiers = mutableMapOf<String, Long> ()
 
         override fun onMonthChange     (year : Int, month : Int) : List<WeekViewEvent>? {
@@ -228,7 +235,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
         fun update (events : Events) {
             map += events.map
-            week.notifyDatasetChanged ()
+            maphash = map.hashCode ()
         }
 
         private fun outdates       (target : DateTime,                  minutes : Minutes = Minutes.TWO) =
