@@ -49,6 +49,7 @@ import trikita.anvil.support.v4.Supportv4DSL.onRefresh
 import trikita.anvil.support.v4.Supportv4DSL.refreshing
 import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 import java.util.Calendar
+import java.util.Random
 import kotlin.properties.Delegates
 import kotlin.properties.Delegates.vetoable
 
@@ -214,6 +215,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
         private val map = mutableMapOf<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> ()
 
+        private val identifiers = mutableMapOf<String, Long> ()
+
         override fun onMonthChange     (year : Int, month : Int) : List<WeekViewEvent>? {
             val             key = Pair (year,       month)
             val value = map[key]
@@ -222,7 +225,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 store.dispatcher.dispatch (SynchronizeCalendar (year, month))
             }
 
-            return value?.second?.mapIndexed { index, event -> convert (index.toLong (), event) } ?: emptyList<WeekViewEvent> ()
+            return value?.second?.map (this::convert) ?: emptyList<WeekViewEvent> ()
         }
 
         fun update (events : Events) {
@@ -233,8 +236,10 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         private fun outdates       (target : DateTime,                  minutes : Minutes = Minutes.TWO) =
             Minutes.minutesBetween (target, DateTime ()).isGreaterThan (minutes)
 
-        private fun convert(index : Long, event : Event) : WeekViewEvent {
-            return WeekViewEvent (index, event.title (), event.location (), calendar (event.start ()), calendar (event.end ()))
+        private fun convert               (event : Event) : WeekViewEvent {
+            val id = identifiers.getOrPut (event.id ()) { Random ().nextLong() }
+
+            return WeekViewEvent (id, event.title (), event.location (), calendar (event.start ()), calendar (event.end ()))
         }
 
         private fun calendar (instant : Instant?) : Calendar {
