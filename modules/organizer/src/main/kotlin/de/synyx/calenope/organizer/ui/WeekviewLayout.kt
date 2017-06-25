@@ -4,7 +4,9 @@ import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.design.widget.CoordinatorLayout
+import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.Toolbar
+import android.view.Gravity
 import android.widget.ImageView
 import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
@@ -13,11 +15,16 @@ import com.alamkanak.weekview.WeekViewEvent
 import com.encodeering.conflate.experimental.api.Storage
 import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.organizer.Application
+import de.synyx.calenope.organizer.Interact
+import de.synyx.calenope.organizer.Interaction
+import de.synyx.calenope.organizer.Interaction.Create
+import de.synyx.calenope.organizer.Interaction.Inspect
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
+import de.synyx.calenope.organizer.floor
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
@@ -27,8 +34,11 @@ import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
+import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.layoutParams
+import trikita.anvil.DSL.margin
+import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.scaleType
 import trikita.anvil.DSL.sip
@@ -43,6 +53,7 @@ import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.anvil.design.DesignDSL.expanded
 import trikita.anvil.design.DesignDSL.expandedTitleColor
+import trikita.anvil.design.DesignDSL.floatingActionButton
 import trikita.anvil.design.DesignDSL.title
 import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.anvil.support.v4.Supportv4DSL.onRefresh
@@ -92,8 +103,20 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             orientation (LinearLayout.VERTICAL)
 
             appBarLayout {
+                anvilonce<AppBarLayout> {
+                    val behavior = AppBarLayout.Behavior ()
+                        behavior.setDragCallback (object : AppBarLayout.Behavior.DragCallback () {
+                            override fun canDrag (layout : AppBarLayout) : Boolean {
+                                return false
+                            }
+                        })
+
+                    val lparams = layoutParams as CoordinatorLayout.LayoutParams
+                        lparams.behavior = behavior
+                }
+
                 size (MATCH, WRAP)
-                expanded (false)
+                expanded (store.state.events.visualize)
 
                 collapsingToolbarLayout {
                     anvilonce<CollapsingToolbarLayout> {
@@ -102,11 +125,22 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                         size (MATCH, MATCH)
 
-                        title (store.state.events.name)
                         titleEnabled (true)
 
                         expandedTitleColor      (Color.TRANSPARENT)
                         collapsedTitleTextColor (Color.WHITE)
+                    }
+
+                    anvilcast<CollapsingToolbarLayout> {
+                        val subject = store.state.events.interaction.let {
+                            when (it) {
+                                is Create  -> return@let it.start.toString ("HH:mm") + (it.end?.let { " - ${it.toString ("HH:mm")}" } ?: "")
+                                is Inspect -> return@let it.event.title ()
+                                else       -> return@let store.state.events.name
+                            }
+                        }
+
+                        title (subject)
                     }
 
                     imageView {
@@ -132,6 +166,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             }
 
             swipeRefreshLayout {
+                id (R.id.weekview_pane)
                 layoutParams (scrolling)
 
                 size (MATCH, MATCH)
@@ -152,11 +187,17 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                                 }
 
                                 override fun hour (earliest : Double) {
+                                    if (store.state.events.interaction == Interaction.Read)
+                                        return reset ()
+
+                                    if (store.state.events.visualize)
+                                        return reset ()
+
                                     previous = earliest
 
                                     val delta : Double = Math.abs (previous - earliest)
                                     if (delta > 1) {
-                                        reset ()
+                                        store.dispatcher.dispatch (Interact (Interaction.Read))
                                     }
                                 }
 
@@ -186,6 +227,20 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         todayHeaderTextColor        = color (R.color.primary_text)
 
                         hourSeparatorColor          = color (R.color.divider)
+
+                        setOnEventClickListener { event, _ ->
+                            events.convert       (event)?.let {
+                                store.dispatcher.dispatch (
+                                        Interact (Inspect (it), visualize = store.state.events.visualize)
+                                )
+                            }
+                        }
+
+                        setEmptyViewClickListener { calendar ->
+                            store.dispatcher.dispatch (
+                                        Interact (Create  (draft = true, start = DateTime (calendar.time).floor (15)), visualize = store.state.events.visualize)
+                            )
+                        }
                     }
                 }
 
@@ -198,6 +253,49 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             year  = firstVisibleDay.get (Calendar.YEAR),
                             month = firstVisibleDay.get (Calendar.MONTH) + 1
                         ))
+                    }
+                }
+            }
+
+            floatingActionButton {
+                anvilonce<FloatingActionButton> {
+                    alpha = 0.0f
+
+                    val params = layoutParams as CoordinatorLayout.LayoutParams
+                        params.anchorId = R.id.weekview_pane
+                        params.anchorGravity = Gravity.BOTTOM or Gravity.END
+                }
+
+                anvilcast<FloatingActionButton> {
+                    size (WRAP, WRAP)
+                    margin (dip (16))
+
+                    onClick {}
+
+                    val   interaction = store.state.events.interaction
+                    when (interaction) {
+                        is Create -> {
+                            imageResource (R.drawable.ic_add)
+                            onClick {
+                                when (store.state.events.interaction) {
+                                    is Create -> store.dispatcher.dispatch (Interact (interaction, visualize = true))
+                                }
+                            }
+
+                        }
+                        is Inspect -> {
+                            imageResource (R.drawable.ic_subject)
+                            onClick {
+                                when (store.state.events.interaction) {
+                                    is Inspect -> store.dispatcher.dispatch (Interact (interaction, visualize = true))
+                                }
+                            }
+                        }
+                    }
+
+                    when (interaction) {
+                        is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
+                        else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
                     }
                 }
             }
@@ -232,6 +330,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
             map += events.map
             maphash = map.hashCode ()
         }
+
+        fun convert (event : WeekViewEvent) = map.flatMap { it.value.second }.firstOrNull { identifiers[it.id ()] == event.id }
 
         private fun outdates       (target : DateTime,                  minutes : Minutes = Minutes.TWO) =
             Minutes.minutesBetween (target, DateTime ()).isGreaterThan (minutes)
