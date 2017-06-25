@@ -46,6 +46,7 @@ import trikita.anvil.appcompat.v7.AppCompatv7DSL.title
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.titleTextColor
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
 import trikita.anvil.cardview.v7.CardViewv7DSL.cardView
+import trikita.anvil.cardview.v7.CardViewv7DSL.radius
 import trikita.anvil.design.DesignDSL.appBarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.adapter
@@ -134,7 +135,8 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
                 gravity (CENTER)
 
-                margin (dip (0), dip (1))
+                margin (dip (0), dip (0), dip (0), dip (1))
+                radius (0.0f)
 
                 textView {
                     size (MATCH, MATCH)
