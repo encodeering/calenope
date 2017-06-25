@@ -27,8 +27,19 @@ data class SelectCalendar (val name : String) : Action
 
 data class SelectCalendarFilter (val filtering : Boolean = true, val stash : Collection<String>? = null) : Action
 
+data class Interact (val interaction : Interaction, val visualize : Boolean = false) : Action
+
 data class Open           (override val context : Context, override val screen : Class<out Context>) : FlowMiddleware.Open, Action
 
 data class OpenSettings   (override val context : Context) : FlowMiddleware.Open by Open (context, Settings::class.java), Action
 
 data class OpenWeekview   (override val context : Context) : FlowMiddleware.Open by Open (context, Weekview::class.java), Action
+
+sealed class Interaction {
+
+    object Read : Interaction ()
+
+    data class Create  (val title : String? = null, val description : String? = null, val start : DateTime, val end : DateTime? = null, val draft : Boolean) : Interaction ()
+    data class Inspect (val event : Event)                                                                                                                   : Interaction ()
+
+}
