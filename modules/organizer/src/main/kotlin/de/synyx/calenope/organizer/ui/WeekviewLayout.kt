@@ -50,6 +50,7 @@ import trikita.anvil.support.v4.Supportv4DSL.refreshing
 import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 import java.util.Calendar
 import kotlin.properties.Delegates
+import kotlin.properties.Delegates.vetoable
 
 /**
  * @author clausen - clausen@synyx.de
@@ -149,9 +150,26 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                          week = Anvil.currentView<WeekviewTouchProxy> ()
                         (week as WeekviewTouchProxy).scrolling = object : WeekviewTouchProxy.Scrolling {
 
+                            private var previous by vetoable (Double.MIN_VALUE) {
+                                _, previous,                       next ->
+                                   previous == Double.MIN_VALUE || next == Double.MIN_VALUE
+                            }
+
                             override fun top (state : Boolean) {
                                 swipeable = state
                             }
+
+                            override fun hour (earliest : Double) {
+                                previous = earliest
+
+                                val delta : Double = Math.abs (previous - earliest)
+                                if (delta > 1) {
+                                    reset ()
+                                }
+                            }
+
+                            private fun reset () { previous = Double.MIN_VALUE }
+
                         }
 
                         events = MonthLoaderAdapter (week, store)

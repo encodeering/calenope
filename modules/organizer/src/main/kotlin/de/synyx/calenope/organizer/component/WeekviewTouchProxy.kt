@@ -15,12 +15,17 @@ class WeekviewTouchProxy (context : Context) : WeekView (context) {
 
         fun top (state : Boolean)
 
+        fun hour (earliest : Double)
+
     }
 
     var scrolling : Scrolling? = null
 
     var scrollingObservable by Delegates.observable (0.0) { _, _, next ->
-        scrolling?.top (abs (next) < 0.1)
+        scrolling?.apply {
+            top (abs (next) < 0.1)
+            hour     (next)
+        }
     }
 
     override fun onTouchEvent (event : MotionEvent) : Boolean {
