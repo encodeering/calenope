@@ -7,7 +7,6 @@ import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.Toolbar
 import android.view.Gravity
-import android.widget.ImageView
 import android.widget.LinearLayout
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
@@ -31,19 +30,22 @@ import org.joda.time.Minutes
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
+import trikita.anvil.BaseDSL.textSize
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
 import trikita.anvil.DSL.imageResource
-import trikita.anvil.DSL.imageView
 import trikita.anvil.DSL.layoutParams
+import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.orientation
-import trikita.anvil.DSL.scaleType
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
+import trikita.anvil.DSL.text
+import trikita.anvil.DSL.textColor
+import trikita.anvil.DSL.textView
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
@@ -52,7 +54,6 @@ import trikita.anvil.design.DesignDSL.collapsedTitleTextColor
 import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.anvil.design.DesignDSL.expanded
-import trikita.anvil.design.DesignDSL.expandedTitleColor
 import trikita.anvil.design.DesignDSL.floatingActionButton
 import trikita.anvil.design.DesignDSL.title
 import trikita.anvil.design.DesignDSL.titleEnabled
@@ -127,8 +128,12 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                         titleEnabled (true)
 
-                        expandedTitleColor      (Color.TRANSPARENT)
                         collapsedTitleTextColor (Color.WHITE)
+
+                        setContentScrimResource (R.color.primary)
+
+                        expandedTitleMarginBottom = dip (20)
+                        expandedTitleMarginStart  = dip (20)
                     }
 
                     anvilcast<CollapsingToolbarLayout> {
@@ -143,15 +148,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         title (subject)
                     }
 
-                    imageView {
-                        anvilonce<ImageView> {
-                            val params = layoutParams as CollapsingToolbarLayout.LayoutParams
-                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
-
-                            size (MATCH, dip (200))
-                            scaleType (ImageView.ScaleType.CENTER_CROP)
-                        }
-                    }
+                    editor ()
 
                     toolbar {
                         anvilonce<Toolbar> {
@@ -286,8 +283,10 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         is Inspect -> {
                             imageResource (R.drawable.ic_subject)
                             onClick {
-                                when (store.state.events.interaction) {
-                                    is Inspect -> store.dispatcher.dispatch (Interact (interaction, visualize = true))
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Inspect -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                    }
                                 }
                             }
                         }
@@ -296,6 +295,31 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     when (interaction) {
                         is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
                         else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun editor () {
+        linearLayout {
+            anvilonce<LinearLayout> {
+                val params = layoutParams as CollapsingToolbarLayout.LayoutParams
+                    params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
+
+                size (MATCH, dip (200))
+                orientation (LinearLayout.VERTICAL)
+            }
+
+            val   interaction = store.state.events.interaction
+            when (interaction) {
+                is Inspect -> {
+                    textView {
+                        text (interaction.event.description ().run { take (197) + if (length > 197) "..." else "" })
+                        textColor (color (R.color.primary_text))
+                        textSize (sip(16.0f))
+                        size (MATCH, WRAP)
+                        margin (dip (20), dip (20), dip (20), 0)
                     }
                 }
             }
