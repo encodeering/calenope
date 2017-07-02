@@ -1,13 +1,19 @@
 package de.synyx.calenope.organizer.ui
 
+import android.app.TimePickerDialog
 import android.graphics.Color
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CollapsingToolbarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.Toolbar
+import android.text.InputType
 import android.view.Gravity
+import android.view.KeyEvent
+import android.view.inputmethod.EditorInfo
 import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.TimePicker
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
@@ -30,15 +36,20 @@ import org.joda.time.Minutes
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
+import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.BaseDSL.textSize
+import trikita.anvil.DSL.backgroundResource
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
+import trikita.anvil.DSL.imageButton
 import trikita.anvil.DSL.imageResource
+import trikita.anvil.DSL.inputType
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.onClick
+import trikita.anvil.DSL.onEditorAction
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
@@ -55,6 +66,9 @@ import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.anvil.design.DesignDSL.expanded
 import trikita.anvil.design.DesignDSL.floatingActionButton
+import trikita.anvil.design.DesignDSL.hint
+import trikita.anvil.design.DesignDSL.textInputEditText
+import trikita.anvil.design.DesignDSL.textInputLayout
 import trikita.anvil.design.DesignDSL.title
 import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.anvil.support.v4.Supportv4DSL.onRefresh
@@ -269,16 +283,31 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                     onClick {}
 
+                    val   visualize   = store.state.events.visualize
                     val   interaction = store.state.events.interaction
                     when (interaction) {
                         is Create -> {
-                            imageResource (R.drawable.ic_add)
-                            onClick {
-                                when (store.state.events.interaction) {
-                                    is Create -> store.dispatcher.dispatch (Interact (interaction, visualize = true))
+                            if (visualize) {
+                                imageResource (R.drawable.ic_save)
+                                onClick {
+                                    store.state.events.interaction.apply {
+                                        when (this) {
+                                            is Create -> store.dispatcher.dispatch (Interact (copy (draft = false)))
+                                        }
+                                    }
                                 }
                             }
 
+                            else {
+                                imageResource (R.drawable.ic_add)
+                                onClick {
+                                    store.state.events.interaction.apply {
+                                        when (this) {
+                                            is Create -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                        }
+                                    }
+                                }
+                            }
                         }
                         is Inspect -> {
                             imageResource (R.drawable.ic_subject)
@@ -320,6 +349,85 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         textSize (sip(16.0f))
                         size (MATCH, WRAP)
                         margin (dip (20), dip (20), dip (20), 0)
+                    }
+                }
+
+                is Create -> {
+                    fun editorwatch (action : TextView.() -> Unit) = { view: TextView, code : Int, _: KeyEvent? ->
+                        when (code) {
+                            EditorInfo.IME_ACTION_PREVIOUS,
+                            EditorInfo.IME_ACTION_NEXT,
+                            EditorInfo.IME_ACTION_DONE -> action (view)
+                        }
+                        false
+                    }
+
+                    textInputLayout {
+                        size (MATCH, WRAP)
+                        margin (dip (20), dip (20), dip (20), 0)
+
+                        hint (context.getString (R.string.weekview_editor_title))
+
+                        textInputEditText {
+                            size (MATCH, dip (40))
+                            inputType (InputType.TYPE_CLASS_TEXT)
+                            onEditorAction (editorwatch {
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Create -> store.dispatcher.dispatch (Interact (copy (title = text.toString ()), visualize = true))
+                                    }
+                                }
+                            })
+                        }
+                    }
+
+                    textInputLayout {
+                        size (MATCH, WRAP)
+                        margin (dip (20), dip (10), dip (20), 0)
+
+                        hint (context.getString (R.string.weekview_editor_description))
+
+                        textInputEditText {
+                            size (MATCH, dip (40))
+                            inputType (InputType.TYPE_CLASS_TEXT)
+                            onEditorAction (editorwatch {
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Create -> store.dispatcher.dispatch (Interact (copy (description = text.toString ()), visualize = true))
+                                    }
+                                }
+                            })
+                        }
+                    }
+
+                    imageButton {
+                        size (WRAP, WRAP)
+                        margin (0, dip (20), dip (20), 0)
+                        imageResource (R.drawable.ic_timelapse)
+                        backgroundResource (R.color.primary)
+                        layoutGravity (Gravity.BOTTOM or Gravity.RIGHT)
+                        onClick {
+                            store.state.events.interaction.apply {
+                                when (this) {
+                                    is Create -> start.plusMinutes (15).let {
+                                        val listener : (TimePicker, Int, Int) -> Unit = { _, hour, minute ->
+                                            val to = it.withMinuteOfHour (minute)
+                                                       .withHourOfDay (hour)
+
+                                            if (to.isAfter (it)) {
+                                                store.dispatcher.dispatch (Interact (copy (end = to), visualize = true))
+                                            }
+                                        }
+
+                                        TimePickerDialog (context, listener, it.hourOfDay, it.minuteOfHour, true).run {
+                                            setCancelable (true)
+                                            setTitle (context.getString (R.string.weekview_editor_date))
+                                            show ()
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
