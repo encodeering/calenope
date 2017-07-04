@@ -38,6 +38,7 @@ import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.BaseDSL.textSize
+import trikita.anvil.BaseDSL.weight
 import trikita.anvil.DSL.backgroundResource
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
@@ -336,7 +337,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                     params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
 
-                size (MATCH, dip (200))
+                size (MATCH, dip (210))
                 orientation (LinearLayout.VERTICAL)
             }
 
@@ -362,15 +363,20 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         false
                     }
 
+                    linearLayout {
+                    size (MATCH, WRAP)
+                    margin (dip (20), dip (20), dip (20), 0)
+                    orientation (LinearLayout.HORIZONTAL)
+
                     textInputLayout {
                         size (MATCH, WRAP)
-                        margin (dip (20), dip (20), dip (20), 0)
-
+                        weight (1.0f)
                         hint (context.getString (R.string.weekview_editor_title))
 
                         textInputEditText {
                             size (MATCH, dip (40))
                             inputType (InputType.TYPE_CLASS_TEXT)
+                            text (interaction.title)
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -381,15 +387,37 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         }
                     }
 
+                    imageButton {
+                        size (dip (48), dip (48))
+                        imageResource (R.drawable.ic_record)
+                        backgroundResource (R.color.primary)
+                        layoutGravity (Gravity.RIGHT)
+                        onClick {
+                            weekview.ask (context.getString (R.string.weekview_editor_title), 100) {
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Create -> store.dispatcher.dispatch (Interact (copy (title = it), visualize = true))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
+
+                    linearLayout {
+                    size (MATCH, WRAP)
+                    margin (dip (20), dip (20), dip (20), 0)
+                    orientation (LinearLayout.HORIZONTAL)
+
                     textInputLayout {
                         size (MATCH, WRAP)
-                        margin (dip (20), dip (10), dip (20), 0)
-
+                        weight (1.0f)
                         hint (context.getString (R.string.weekview_editor_description))
 
                         textInputEditText {
                             size (MATCH, dip (40))
                             inputType (InputType.TYPE_CLASS_TEXT)
+                            text (interaction.description)
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -401,11 +429,28 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     }
 
                     imageButton {
-                        size (WRAP, WRAP)
+                        size (dip (48), dip (48))
+                        imageResource (R.drawable.ic_record)
+                        backgroundResource (R.color.primary)
+                        layoutGravity (Gravity.RIGHT)
+                        onClick {
+                            weekview.ask (context.getString (R.string.weekview_editor_title), 200) {
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    }
+
+                    imageButton {
+                        size (dip (48), dip (48))
                         margin (0, dip (20), dip (20), 0)
                         imageResource (R.drawable.ic_timelapse)
                         backgroundResource (R.color.primary)
-                        layoutGravity (Gravity.BOTTOM or Gravity.RIGHT)
+                        layoutGravity (Gravity.RIGHT)
                         onClick {
                             store.state.events.interaction.apply {
                                 when (this) {
