@@ -80,6 +80,13 @@ import kotlin.properties.Delegates.vetoable
  */
 class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview), AutoCloseable {
 
+    private val speech = object : Speech {
+
+        override fun ask (prompt : String, callback : (String) -> Unit) {
+            weekview.ask (prompt, prompt.sumBy { it.toInt () } % (2 * Short.MAX_VALUE), callback)
+        }
+    }
+
     private val store by lazy { Application.store }
 
     private val scrolling by lazy {
@@ -369,7 +376,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                         button = {
                         onClick {
-                            weekview.ask (context.getString (R.string.weekview_editor_title), 100) {
+                            speech.ask (context.getString (R.string.weekview_editor_title)) {
                                 store.state.events.interaction.apply {
                                     when (this) {
                                         is Create -> store.dispatcher.dispatch (Interact (copy (title = it), visualize = true))
@@ -393,7 +400,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                         button = {
                         onClick {
-                            weekview.ask (context.getString (R.string.weekview_editor_title), 200) {
+                            speech.ask (context.getString (R.string.weekview_editor_title)) {
                                 store.state.events.interaction.apply {
                                     when (this) {
                                         is Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
