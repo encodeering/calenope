@@ -24,38 +24,30 @@ import de.synyx.calenope.organizer.Interaction
 import de.synyx.calenope.organizer.Interaction.Create
 import de.synyx.calenope.organizer.Interaction.Inspect
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
+import de.synyx.calenope.organizer.component.WeekviewEditor
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
-import de.synyx.calenope.organizer.component.Widgets.button
-import de.synyx.calenope.organizer.component.Widgets.speechinput
 import de.synyx.calenope.organizer.floor
+import de.synyx.calenope.organizer.speech.Speech
 import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
 import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
-import trikita.anvil.BaseDSL.layoutGravity
-import trikita.anvil.BaseDSL.textSize
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
 import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.layoutParams
-import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.onClick
-import trikita.anvil.DSL.onEditorAction
 import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.sip
 import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
-import trikita.anvil.DSL.text
-import trikita.anvil.DSL.textColor
-import trikita.anvil.DSL.textView
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
@@ -78,7 +70,7 @@ import kotlin.properties.Delegates.vetoable
 /**
  * @author clausen - clausen@synyx.de
  */
-class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekview), AutoCloseable {
+class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoCloseable {
 
     private val speech = object : Speech {
 
@@ -88,6 +80,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
     }
 
     private val store by lazy { Application.store }
+
+    private val editor : WeekviewEditor = WeekviewEditor (weekview, speech, store)
 
     private val scrolling by lazy {
         val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
@@ -165,7 +159,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         title (subject)
                     }
 
-                    editor (store)
+                    editor.view ()
 
                     toolbar {
                         anvilonce<Toolbar> {
@@ -329,113 +323,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     when (interaction) {
                         is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
                         else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun editor (store : Storage<State>) {
-        linearLayout {
-            anvilonce<LinearLayout> {
-                size (MATCH, dip (210))
-                orientation (LinearLayout.VERTICAL)
-            }
-
-            val   interaction = store.state.events.interaction
-            when (interaction) {
-                is Inspect -> {
-                    textView {
-                        text (interaction.event.description ().run { take (197) + if (length > 197) "..." else "" })
-                        textSize (sip(16.0f))
-                        size (MATCH, WRAP)
-                        margin (dip (20), dip (20), dip (20), 0)
-                    }
-                }
-
-                is Create -> {
-                    fun editorwatch (action : TextView.() -> Unit) = { view: TextView, code : Int, _: KeyEvent? ->
-                        when (code) {
-                            EditorInfo.IME_ACTION_PREVIOUS,
-                            EditorInfo.IME_ACTION_NEXT,
-                            EditorInfo.IME_ACTION_DONE -> action (view)
-                        }
-                        false
-                    }
-
-                    speechinput (interaction.title, context.getString(R.string.weekview_editor_title),
-                        input = {
-                            onEditorAction (editorwatch {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Create -> store.dispatcher.dispatch (Interact (copy (title = text.toString ()), visualize = true))
-                                    }
-                                }
-                            })
-                        },
-
-                        button = {
-                        onClick {
-                            speech.ask (context.getString (R.string.weekview_editor_title)) {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Create -> store.dispatcher.dispatch (Interact (copy (title = it), visualize = true))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    )
-
-                    speechinput (interaction.description, context.getString (R.string.weekview_editor_description),
-                        input = {
-                            onEditorAction (editorwatch {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Create -> store.dispatcher.dispatch (Interact (copy (description = text.toString ()), visualize = true))
-                                    }
-                                }
-                            })
-                        },
-
-                        button = {
-                        onClick {
-                            speech.ask (context.getString (R.string.weekview_editor_title)) {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    )
-
-                    button (R.drawable.ic_timelapse) {
-                        margin (0, dip (20), dip (20), 0)
-                        layoutGravity (Gravity.RIGHT)
-                        onClick {
-                            store.state.events.interaction.apply {
-                                when (this) {
-                                    is Create -> start.plusMinutes (15).let {
-                                        val listener : (TimePicker, Int, Int) -> Unit = { _, hour, minute ->
-                                            val to = it.withMinuteOfHour (minute)
-                                                       .withHourOfDay (hour)
-
-                                            if (to.isAfter (it)) {
-                                                store.dispatcher.dispatch (Interact (copy (end = to), visualize = true))
-                                            }
-                                        }
-
-                                        TimePickerDialog (context, listener, it.hourOfDay, it.minuteOfHour, true).run {
-                                            setCancelable (true)
-                                            setTitle (context.getString (R.string.weekview_editor_date))
-                                            show ()
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
