@@ -331,9 +331,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
     private fun editor (store : Storage<State>) {
         linearLayout {
             anvilonce<LinearLayout> {
-                val params = layoutParams as CollapsingToolbarLayout.LayoutParams
-                    params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PARALLAX
-
                 size (MATCH, dip (210))
                 orientation (LinearLayout.VERTICAL)
             }
@@ -343,7 +340,6 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                 is Inspect -> {
                     textView {
                         text (interaction.event.description ().run { take (197) + if (length > 197) "..." else "" })
-                        textColor (color (R.color.primary_text))
                         textSize (sip(16.0f))
                         size (MATCH, WRAP)
                         margin (dip (20), dip (20), dip (20), 0)
