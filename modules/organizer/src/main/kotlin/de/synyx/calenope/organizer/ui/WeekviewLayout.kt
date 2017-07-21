@@ -29,6 +29,7 @@ import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
+import de.synyx.calenope.organizer.component.Widgets.button
 import de.synyx.calenope.organizer.floor
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -39,11 +40,9 @@ import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.BaseDSL.textSize
 import trikita.anvil.BaseDSL.weight
-import trikita.anvil.DSL.backgroundResource
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
-import trikita.anvil.DSL.imageButton
 import trikita.anvil.DSL.imageResource
 import trikita.anvil.DSL.inputType
 import trikita.anvil.DSL.layoutParams
@@ -389,10 +388,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         }
                     }
 
-                    imageButton {
-                        size (dip (48), dip (48))
-                        imageResource (R.drawable.ic_record)
-                        backgroundResource (R.color.primary)
+                    button (R.drawable.ic_record) {
                         layoutGravity (Gravity.RIGHT)
                         onClick {
                             weekview.ask (context.getString (R.string.weekview_editor_title), 100) {
@@ -430,10 +426,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         }
                     }
 
-                    imageButton {
-                        size (dip (48), dip (48))
-                        imageResource (R.drawable.ic_record)
-                        backgroundResource (R.color.primary)
+                    button (R.drawable.ic_record) {
                         layoutGravity (Gravity.RIGHT)
                         onClick {
                             weekview.ask (context.getString (R.string.weekview_editor_title), 200) {
@@ -447,11 +440,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                     }
                     }
 
-                    imageButton {
-                        size (dip (48), dip (48))
+                    button (R.drawable.ic_timelapse) {
                         margin (0, dip (20), dip (20), 0)
-                        imageResource (R.drawable.ic_timelapse)
-                        backgroundResource (R.color.primary)
                         layoutGravity (Gravity.RIGHT)
                         onClick {
                             store.state.events.interaction.apply {
