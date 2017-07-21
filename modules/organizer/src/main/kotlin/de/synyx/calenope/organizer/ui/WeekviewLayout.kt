@@ -172,6 +172,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
 
                             size (MATCH, dip (56))
                             popupTheme (R.style.AppTheme_PopupOverlay)
+
+                            elevation = -1.0f
                         }
                     }
                 }
