@@ -7,7 +7,6 @@ import android.support.design.widget.CollapsingToolbarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.widget.Toolbar
-import android.text.InputType
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
@@ -30,6 +29,7 @@ import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import de.synyx.calenope.organizer.component.Widgets.button
+import de.synyx.calenope.organizer.component.Widgets.speechinput
 import de.synyx.calenope.organizer.floor
 import org.joda.time.DateTime
 import org.joda.time.Instant
@@ -39,12 +39,10 @@ import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.BaseDSL.textSize
-import trikita.anvil.BaseDSL.weight
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
 import trikita.anvil.DSL.imageResource
-import trikita.anvil.DSL.inputType
 import trikita.anvil.DSL.layoutParams
 import trikita.anvil.DSL.linearLayout
 import trikita.anvil.DSL.margin
@@ -66,9 +64,6 @@ import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
 import trikita.anvil.design.DesignDSL.coordinatorLayout
 import trikita.anvil.design.DesignDSL.expanded
 import trikita.anvil.design.DesignDSL.floatingActionButton
-import trikita.anvil.design.DesignDSL.hint
-import trikita.anvil.design.DesignDSL.textInputEditText
-import trikita.anvil.design.DesignDSL.textInputLayout
 import trikita.anvil.design.DesignDSL.title
 import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.anvil.support.v4.Supportv4DSL.onRefresh
@@ -364,20 +359,8 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         false
                     }
 
-                    linearLayout {
-                    size (MATCH, WRAP)
-                    margin (dip (20), dip (20), dip (20), 0)
-                    orientation (LinearLayout.HORIZONTAL)
-
-                    textInputLayout {
-                        size (MATCH, WRAP)
-                        weight (1.0f)
-                        hint (context.getString (R.string.weekview_editor_title))
-
-                        textInputEditText {
-                            size (MATCH, dip (40))
-                            inputType (InputType.TYPE_CLASS_TEXT)
-                            text (interaction.title)
+                    speechinput (interaction.title, context.getString(R.string.weekview_editor_title),
+                        input = {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -385,11 +368,9 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                                     }
                                 }
                             })
-                        }
-                    }
+                        },
 
-                    button (R.drawable.ic_record) {
-                        layoutGravity (Gravity.RIGHT)
+                        button = {
                         onClick {
                             weekview.ask (context.getString (R.string.weekview_editor_title), 100) {
                                 store.state.events.interaction.apply {
@@ -400,22 +381,10 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             }
                         }
                     }
-                    }
+                    )
 
-                    linearLayout {
-                    size (MATCH, WRAP)
-                    margin (dip (20), dip (20), dip (20), 0)
-                    orientation (LinearLayout.HORIZONTAL)
-
-                    textInputLayout {
-                        size (MATCH, WRAP)
-                        weight (1.0f)
-                        hint (context.getString (R.string.weekview_editor_description))
-
-                        textInputEditText {
-                            size (MATCH, dip (40))
-                            inputType (InputType.TYPE_CLASS_TEXT)
-                            text (interaction.description)
+                    speechinput (interaction.description, context.getString (R.string.weekview_editor_description),
+                        input = {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -423,11 +392,9 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                                     }
                                 }
                             })
-                        }
-                    }
+                        },
 
-                    button (R.drawable.ic_record) {
-                        layoutGravity (Gravity.RIGHT)
+                        button = {
                         onClick {
                             weekview.ask (context.getString (R.string.weekview_editor_title), 200) {
                                 store.state.events.interaction.apply {
@@ -438,7 +405,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                             }
                         }
                     }
-                    }
+                    )
 
                     button (R.drawable.ic_timelapse) {
                         margin (0, dip (20), dip (20), 0)
