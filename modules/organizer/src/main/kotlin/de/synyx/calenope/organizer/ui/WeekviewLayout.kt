@@ -24,6 +24,7 @@ import de.synyx.calenope.organizer.Interaction
 import de.synyx.calenope.organizer.Interaction.Create
 import de.synyx.calenope.organizer.Interaction.Inspect
 import de.synyx.calenope.organizer.R
+import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
@@ -157,7 +158,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
                         title (subject)
                     }
 
-                    editor ()
+                    editor (store)
 
                     toolbar {
                         anvilonce<Toolbar> {
@@ -327,7 +328,7 @@ class WeekviewLayout (private val weekview : Weekview) : RenderableView (weekvie
         }
     }
 
-    private fun editor () {
+    private fun editor (store : Storage<State>) {
         linearLayout {
             anvilonce<LinearLayout> {
                 val params = layoutParams as CollapsingToolbarLayout.LayoutParams
