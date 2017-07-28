@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="weekview_proxy" type="id">11111</item>
-    <item name="weekview_pane" type="id">11112</item>
 </resources>

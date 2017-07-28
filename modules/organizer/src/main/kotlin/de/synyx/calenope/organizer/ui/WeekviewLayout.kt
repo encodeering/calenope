@@ -1,18 +1,6 @@
 package de.synyx.calenope.organizer.ui
 
-import android.app.TimePickerDialog
 import android.graphics.Color
-import android.support.design.widget.AppBarLayout
-import android.support.design.widget.CollapsingToolbarLayout
-import android.support.design.widget.CoordinatorLayout
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.widget.Toolbar
-import android.view.Gravity
-import android.view.KeyEvent
-import android.view.inputmethod.EditorInfo
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.TimePicker
 import com.alamkanak.weekview.MonthLoader
 import com.alamkanak.weekview.WeekView
 import com.alamkanak.weekview.WeekViewEvent
@@ -27,6 +15,7 @@ import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State.Events
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.color
+import de.synyx.calenope.organizer.component.Layouts.Collapsible
 import de.synyx.calenope.organizer.component.WeekviewEditor
 import de.synyx.calenope.organizer.component.WeekviewTouchProxy
 import de.synyx.calenope.organizer.floor
@@ -35,37 +24,27 @@ import org.joda.time.DateTime
 import org.joda.time.Instant
 import org.joda.time.Minutes
 import trikita.anvil.Anvil
-import trikita.anvil.BaseDSL.MATCH
-import trikita.anvil.BaseDSL.WRAP
+import trikita.anvil.DSL.alpha
 import trikita.anvil.DSL.dip
 import trikita.anvil.DSL.enabled
 import trikita.anvil.DSL.id
 import trikita.anvil.DSL.imageResource
-import trikita.anvil.DSL.layoutParams
-import trikita.anvil.DSL.margin
 import trikita.anvil.DSL.onClick
-import trikita.anvil.DSL.orientation
 import trikita.anvil.DSL.sip
-import trikita.anvil.DSL.size
 import trikita.anvil.DSL.v
+import trikita.anvil.DSL.visibility
 import trikita.anvil.RenderableView
-import trikita.anvil.appcompat.v7.AppCompatv7DSL.popupTheme
-import trikita.anvil.appcompat.v7.AppCompatv7DSL.toolbar
-import trikita.anvil.design.DesignDSL.appBarLayout
 import trikita.anvil.design.DesignDSL.collapsedTitleTextColor
-import trikita.anvil.design.DesignDSL.collapsingToolbarLayout
-import trikita.anvil.design.DesignDSL.coordinatorLayout
+import trikita.anvil.design.DesignDSL.contentScrimResource
 import trikita.anvil.design.DesignDSL.expanded
-import trikita.anvil.design.DesignDSL.floatingActionButton
+import trikita.anvil.design.DesignDSL.expandedTitleMarginBottom
+import trikita.anvil.design.DesignDSL.expandedTitleMarginStart
 import trikita.anvil.design.DesignDSL.title
-import trikita.anvil.design.DesignDSL.titleEnabled
 import trikita.anvil.support.v4.Supportv4DSL.onRefresh
 import trikita.anvil.support.v4.Supportv4DSL.refreshing
-import trikita.anvil.support.v4.Supportv4DSL.swipeRefreshLayout
 import java.util.Calendar
 import java.util.Random
 import kotlin.properties.Delegates
-import kotlin.properties.Delegates.vetoable
 
 /**
  * @author clausen - clausen@synyx.de
@@ -82,12 +61,6 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
     private val store by lazy { Application.store }
 
     private val editor : WeekviewEditor = WeekviewEditor (weekview, speech, store)
-
-    private val scrolling by lazy {
-        val params = CoordinatorLayout.LayoutParams (MATCH, MATCH)
-            params.behavior = AppBarLayout.ScrollingViewBehavior ()
-            params
-    }
 
     private lateinit var events : MonthLoaderAdapter
 
@@ -106,80 +79,67 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
     }
 
     override fun view () {
-        weekview ()
+        weekview.view ()
     }
 
-    private fun weekview () {
-        coordinatorLayout {
-            size (MATCH, MATCH)
-            orientation (LinearLayout.VERTICAL)
+    val weekview by lazy {
+        Collapsible (
+            fab = {
+                when (it) {
+                    true  -> alpha (0.0f)
+                    false -> {
+                        visibility (true)
 
-            appBarLayout {
-                anvilonce<AppBarLayout> {
-                    val behavior = AppBarLayout.Behavior ()
-                        behavior.setDragCallback (object : AppBarLayout.Behavior.DragCallback () {
-                            override fun canDrag (layout : AppBarLayout) : Boolean {
-                                return false
+                        onClick {}
+
+                        val   visualize   = store.state.events.visualize
+                        val   interaction = store.state.events.interaction
+                        when (interaction) {
+                            is Create -> {
+                                if (visualize) {
+                                    imageResource (R.drawable.ic_save)
+                                    onClick {
+                                        store.state.events.interaction.apply {
+                                            when (this) {
+                                                is Create -> store.dispatcher.dispatch (Interact (copy (draft = false)))
+                                            }
+                                        }
+                                    }
+                                }
+
+                                else {
+                                    imageResource (R.drawable.ic_add)
+                                    onClick {
+                                        store.state.events.interaction.apply {
+                                            when (this) {
+                                                is Create -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                        })
-
-                    val lparams = layoutParams as CoordinatorLayout.LayoutParams
-                        lparams.behavior = behavior
-                }
-
-                size (MATCH, WRAP)
-                expanded (store.state.events.visualize)
-
-                collapsingToolbarLayout {
-                    anvilonce<CollapsingToolbarLayout> {
-                        val params = layoutParams as AppBarLayout.LayoutParams
-                            params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
-
-                        size (MATCH, MATCH)
-
-                        titleEnabled (true)
-
-                        collapsedTitleTextColor (Color.WHITE)
-
-                        setContentScrimResource (R.color.primary)
-
-                        expandedTitleMarginBottom = dip (20)
-                        expandedTitleMarginStart  = dip (20)
-                    }
-
-                    anvilcast<CollapsingToolbarLayout> {
-                        val subject = store.state.events.interaction.let {
-                            when (it) {
-                                is Create  -> return@let it.start.toString ("HH:mm") + (it.end?.let { " - ${it.toString ("HH:mm")}" } ?: "")
-                                is Inspect -> return@let it.event.title ()
-                                else       -> return@let store.state.events.name
+                            is Inspect -> {
+                                imageResource (R.drawable.ic_subject)
+                                onClick {
+                                    store.state.events.interaction.apply {
+                                        when (this) {
+                                            is Inspect -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                        }
+                                    }
+                                }
                             }
                         }
 
-                        title (subject)
-                    }
-
-                    editor.view ()
-
-                    toolbar {
-                        anvilonce<Toolbar> {
-                            val params = layoutParams as CollapsingToolbarLayout.LayoutParams
-                                params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
-
-                            size (MATCH, dip (56))
-                            popupTheme (R.style.AppTheme_PopupOverlay)
-
-                            elevation = -1.0f
+                        when (interaction) {
+                            is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
+                            else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
                         }
                     }
                 }
-            }
+            },
 
-            swipeRefreshLayout {
-                id (R.id.weekview_pane)
-                layoutParams (scrolling)
-
-                size (MATCH, MATCH)
+            content = {
+                if (it) return@Collapsible
 
                 v (WeekviewTouchProxy::class.java) {
                     anvilonce<WeekviewTouchProxy> {
@@ -187,31 +147,31 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
 
                         scrolling = object : WeekviewTouchProxy.Scrolling {
 
-                                private var previous by vetoable (Double.MIN_VALUE) {
-                                    _, previous,                       next ->
-                                       previous == Double.MIN_VALUE || next == Double.MIN_VALUE
+                            private var previous by Delegates.vetoable (Double.MIN_VALUE) {
+                                _, previous,                       next ->
+                                   previous == Double.MIN_VALUE || next == Double.MIN_VALUE
+                            }
+
+                            override fun top (state : Boolean) {
+                                swipeable = state
+                            }
+
+                            override fun hour (earliest : Double) {
+                                if (store.state.events.interaction == Interaction.Read)
+                                    return reset ()
+
+                                if (store.state.events.visualize)
+                                    return reset ()
+
+                                previous = earliest
+
+                                val delta : Double = Math.abs (previous - earliest)
+                                if (delta > 1) {
+                                    store.dispatcher.dispatch (Interact (Interaction.Read))
                                 }
+                            }
 
-                                override fun top (state : Boolean) {
-                                    swipeable = state
-                                }
-
-                                override fun hour (earliest : Double) {
-                                    if (store.state.events.interaction == Interaction.Read)
-                                        return reset ()
-
-                                    if (store.state.events.visualize)
-                                        return reset ()
-
-                                    previous = earliest
-
-                                    val delta : Double = Math.abs (previous - earliest)
-                                    if (delta > 1) {
-                                        store.dispatcher.dispatch (Interact (Interaction.Read))
-                                    }
-                                }
-
-                                private fun reset () { previous = Double.MIN_VALUE }
+                            private fun reset () { previous = Double.MIN_VALUE }
 
                         }
 
@@ -265,68 +225,37 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                         ))
                     }
                 }
-            }
+            },
 
-            floatingActionButton {
-                anvilonce<FloatingActionButton> {
-                    alpha = 0.0f
+            appbar = {
+                if (it) return@Collapsible
 
-                    val params = layoutParams as CoordinatorLayout.LayoutParams
-                        params.anchorId = R.id.weekview_pane
-                        params.anchorGravity = Gravity.BOTTOM or Gravity.END
-                }
+                expanded (store.state.events.visualize)
+            },
 
-                anvilcast<FloatingActionButton> {
-                    size (WRAP, WRAP)
-                    margin (dip (16))
+            collapsible = {
+                if (it) return@Collapsible
 
-                    onClick {}
+                contentScrimResource (R.color.primary)
 
-                    val   visualize   = store.state.events.visualize
-                    val   interaction = store.state.events.interaction
-                    when (interaction) {
-                        is Create -> {
-                            if (visualize) {
-                                imageResource (R.drawable.ic_save)
-                                onClick {
-                                    store.state.events.interaction.apply {
-                                        when (this) {
-                                            is Create -> store.dispatcher.dispatch (Interact (copy (draft = false)))
-                                        }
-                                    }
-                                }
-                            }
+                collapsedTitleTextColor (Color.WHITE)
 
-                            else {
-                                imageResource (R.drawable.ic_add)
-                                onClick {
-                                    store.state.events.interaction.apply {
-                                        when (this) {
-                                            is Create -> store.dispatcher.dispatch (Interact (this, visualize = true))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        is Inspect -> {
-                            imageResource (R.drawable.ic_subject)
-                            onClick {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Inspect -> store.dispatcher.dispatch (Interact (this, visualize = true))
-                                    }
-                                }
-                            }
-                        }
-                    }
+                expandedTitleMarginBottom (dip (20))
+                expandedTitleMarginStart  (dip (20))
 
-                    when (interaction) {
-                        is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
-                        else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
+                val subject = store.state.events.interaction.let {
+                    when (it) {
+                        is Create  -> return@let it.start.toString ("HH:mm") + (it.end?.let { " - ${it.toString ("HH:mm")}" } ?: "")
+                        is Inspect -> return@let it.event.title ()
+                        else       -> return@let store.state.events.name
                     }
                 }
+
+                title (subject)
+
+                editor.view ()
             }
-        }
+        )
     }
 
     private class MonthLoaderAdapter (private val week : WeekView, private val store : Storage<*>) : MonthLoader.MonthChangeListener {
