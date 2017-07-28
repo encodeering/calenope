@@ -6,4 +6,7 @@
     <string name="save_error">Couldn\'t save information</string>
     <string name="request_runtime_permission">Application requires a permission to Read Contacts</string>
     <string name="settings">Settings</string>
+    <string name="weekview_editor_title">Choose Title</string>
+    <string name="weekview_editor_date">Choose End-Date</string>
+    <string name="weekview_editor_description">Choose Description</string>
 </resources>

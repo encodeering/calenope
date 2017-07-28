@@ -36,7 +36,9 @@ interface State {
     data class Events  (
         @Transient val map : Map<Pair<Int, Int>, Pair<DateTime, Collection<Event>>> = emptyMap (),
                    val synchronizing : Boolean = false,
-                   val name : String = ""
+                   val name : String = "",
+        @Transient val interaction : Interaction = Interaction.Read,
+        @Transient val visualize : Boolean = false
     )
 
     companion object Reducer : com.encodeering.conflate.experimental.api.Reducer<State> {
@@ -54,6 +56,7 @@ interface State {
                 is Synchronize         -> action.state.events
                 is SynchronizeCalendar ->              events.copy (map = events.map.plus (singletonMap (action.key, Pair (action.timestamp, action.events))), synchronizing = action.synchronizing)
                 is SelectCalendar      ->              events.copy (map = emptyMap (), name = action.name)
+                is Interact            ->              events.copy (interaction = action.interaction, visualize = action.visualize)
                 else                   ->              events
             }
 
