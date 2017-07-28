@@ -1,5 +1,6 @@
 package de.synyx.calenope.organizer
 
+import android.os.Handler
 import com.encodeering.conflate.experimental.android.conflate
 import com.encodeering.conflate.experimental.android.logging
 import com.encodeering.conflate.experimental.api.Action
@@ -9,6 +10,8 @@ import de.synyx.calenope.organizer.middleware.FlowMiddleware
 import de.synyx.calenope.organizer.middleware.GoogleMiddleware
 import trikita.anvil.Anvil
 import android.app.Application as Android
+
+
 
 /**
  * @author clausen - clausen@synyx.de
@@ -32,10 +35,14 @@ class Application : android.app.Application () {
     override fun onCreate () {
         super.onCreate ()
 
+        val handler = Handler ()
+
         self = this
 
         store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
-        store.subscribe { Anvil.render () }
+        store.subscribe {
+            handler.postDelayed (Anvil::render, 0)
+        }
     }
 
 }
