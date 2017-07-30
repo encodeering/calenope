@@ -13,11 +13,10 @@ import de.synyx.calenope.organizer.Interact
 import de.synyx.calenope.organizer.Interaction
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.State
-import de.synyx.calenope.organizer.component.Widgets.button
-import de.synyx.calenope.organizer.component.Widgets.speechinput
+import de.synyx.calenope.organizer.component.Widgets.Button
+import de.synyx.calenope.organizer.component.Widgets.Speechinput
 import de.synyx.calenope.organizer.speech.Speech
 import de.synyx.calenope.organizer.ui.anvilonce
-import trikita.anvil.Anvil
 import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
@@ -41,7 +40,7 @@ class WeekviewEditor (
         private val context : Context,
         private val speech  : Speech,
         private val store   : Storage<State>
-) : Anvil.Renderable {
+) : Component () {
 
     override fun view () {
         linearLayout {
@@ -70,7 +69,8 @@ class WeekviewEditor (
                         false
                     }
 
-                    speechinput (interaction.title, context.getString (R.string.weekview_editor_title),
+                    component {
+                    Speechinput(interaction.title, context.getString (R.string.weekview_editor_title),
                         input = {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
@@ -92,8 +92,10 @@ class WeekviewEditor (
                             }
                         }
                     )
+                    }
 
-                    speechinput (interaction.description, context.getString (R.string.weekview_editor_description),
+                    component {
+                    Speechinput(interaction.description, context.getString (R.string.weekview_editor_description),
                         input = {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
@@ -115,8 +117,10 @@ class WeekviewEditor (
                             }
                         }
                     )
+                    }
 
-                    button (R.drawable.ic_timelapse) {
+                    component {
+                    Button(R.drawable.ic_timelapse) {
                         margin (0, dip (20), dip (20), 0)
                         layoutGravity (Gravity.RIGHT)
                         onClick {
@@ -141,6 +145,7 @@ class WeekviewEditor (
                                 }
                             }
                         }
+                    }
                     }
                 }
             }

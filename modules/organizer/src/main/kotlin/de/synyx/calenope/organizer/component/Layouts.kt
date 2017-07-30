@@ -13,7 +13,6 @@ import android.widget.LinearLayout
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.ui.anvilcast
 import de.synyx.calenope.organizer.ui.anvilonce
-import trikita.anvil.Anvil
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.dip
@@ -49,12 +48,13 @@ object Layouts {
     }
 
     class Regular(
-        fab     : FloatingActionButton.(Boolean) -> Unit = {},
-        content : SwipeRefreshLayout.(Boolean )  -> Unit = {},
-        toolbar : Toolbar.(Boolean)              -> Unit = {}
-    )  : Anvil.Renderable {
+        private val fab     : FloatingActionButton.(Boolean) -> Unit = {},
+        private val content : SwipeRefreshLayout.(Boolean )  -> Unit = {},
+        private val toolbar : Toolbar.(Boolean)              -> Unit = {}
+    ) : Component () {
 
-        val pane = Collapsible (
+        override fun view () = component ("layout") {
+            Collapsible (
             fab     = fab,
             content = content,
             toolbar = toolbar,
@@ -64,9 +64,9 @@ object Layouts {
                 title ("")
                 titleEnabled (false)
             }
-        )
+            )
+        }
 
-        override fun view () = pane.view ()
     }
 
     class Collapsible(
@@ -76,7 +76,7 @@ object Layouts {
         private val appbar      : AppBarLayout.(Boolean)            -> Unit = {},
         private val toolbar     : Toolbar.(Boolean)                 -> Unit = {},
         private val collapsible : CollapsingToolbarLayout.(Boolean) -> Unit = {}
-    ) : Anvil.Renderable {
+    ) : Component () {
 
         val contentID = View.generateViewId ()
 

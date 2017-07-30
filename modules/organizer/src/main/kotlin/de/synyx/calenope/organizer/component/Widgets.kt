@@ -35,11 +35,12 @@ import trikita.anvil.design.DesignDSL.textInputLayout
  */
 object Widgets  {
 
-    class button (
-        resource : Int,
-        button   : ImageButton.() -> Unit = {}
-    ) {
-        init {
+    class Button(
+        private val resource : Int,
+        private val button   : ImageButton.() -> Unit = {}
+    ) : Component () {
+
+        override fun view () {
             imageButton {
                 anvilonce<android.widget.ImageButton> {
                     size (dip (48), dip (48))
@@ -55,15 +56,17 @@ object Widgets  {
                 }
             }
         }
+
     }
 
-    class speechinput (
-        text   : CharSequence? = "",
-        hint   : CharSequence? = "",
-        input  : TextInputEditText.() -> Unit  = {},
-        button : ImageButton.() -> Unit        = {}
-    ) {
-        init {
+    class Speechinput(
+        private val text   : CharSequence? = "",
+        private val hint   : CharSequence? = "",
+        private val input  : TextInputEditText.() -> Unit  = {},
+        private val button : ImageButton.() -> Unit        = {}
+    ) : Component ()  {
+
+        override fun view () {
             linearLayout {
                 size (MATCH, WRAP)
                 orientation (LinearLayout.HORIZONTAL)
@@ -74,7 +77,7 @@ object Widgets  {
                     anvilonce<TextInputLayout> {
                         size (MATCH, WRAP)
                         weight (1.0f)
-                        hint (hint)
+                        hint (this@Speechinput.hint)
                     }
 
                     textInputEditText {
@@ -84,7 +87,7 @@ object Widgets  {
                         }
 
                         anvilcast<TextInputEditText> {
-                            text (text)
+                            text (this@Speechinput.text)
                             onEditorAction { _, _, _ -> false }
 
                             input (this)
@@ -92,7 +95,8 @@ object Widgets  {
                     }
                 }
 
-                button (R.drawable.ic_record) {
+                component {
+                Button (R.drawable.ic_record) {
                     anvilonce<ImageButton> {
                         layoutGravity (Gravity.END)
                     }
@@ -105,4 +109,5 @@ object Widgets  {
         }
     }
 
+    }
 }
