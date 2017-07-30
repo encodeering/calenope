@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.widget.Toolbar
 import android.view.Gravity
-import android.view.View
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.R
 import de.synyx.calenope.organizer.ui.anvilcast
@@ -78,8 +77,6 @@ object Layouts {
         private val collapsible : CollapsingToolbarLayout.(Boolean) -> Unit = {}
     ) : Component () {
 
-        val contentID = View.generateViewId ()
-
         override fun view () {
             coordinatorLayout {
                 size (MATCH, MATCH)
@@ -144,7 +141,7 @@ object Layouts {
                     }
 
                     anvilcast<SwipeRefreshLayout> {
-                        id (contentID)
+                        id (viewID ("content"))
 
                         layoutParams (scrolling)
                         size (MATCH, MATCH)
@@ -158,7 +155,7 @@ object Layouts {
                 floatingActionButton {
                     anvilonce<FloatingActionButton> {
                         val params = layoutParams as CoordinatorLayout.LayoutParams
-                            params.anchorId = contentID
+                            params.anchorId = viewID ("content")
                             params.anchorGravity = Gravity.BOTTOM or Gravity.END
 
                         fab (true)
