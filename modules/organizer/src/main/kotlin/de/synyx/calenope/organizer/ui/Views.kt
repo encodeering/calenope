@@ -13,13 +13,16 @@ fun <T : View> View.use(identifier : Int, renderable : T.() -> Unit = {}) : T? {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun <T : View> anvilonce (noinline renderable: T.() -> Unit) {
+inline fun <reified T : View> anvilonce (noinline renderable: T.() -> Unit) {
     init {
         anvilcast (renderable)
     }
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <T : View> anvilcast (renderable: T.() -> Unit) {
-    currentView<T> ().renderable ()
+inline fun <reified T : View> anvilcast (renderable: T.() -> Unit) {
+    currentView<View> ().apply {
+        if (this is T)
+            this.renderable ()
+    }
 }
