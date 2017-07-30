@@ -44,7 +44,7 @@ object Layouts {
             params
     }
 
-    class Regular(
+    class Regular (
         private val fab     : Element<FloatingActionButton>.() -> Unit = {},
         private val content : Element<SwipeRefreshLayout>.()   -> Unit = {},
         private val toolbar : Element<Toolbar>.()              -> Unit = {}
@@ -52,21 +52,21 @@ object Layouts {
 
         override fun view () = component ("layout") {
             Collapsible (
-            fab     = fab,
-            content = content,
-            toolbar = toolbar,
-            collapsible = {
-                always += {
-                title ("")
-                titleEnabled (false)
+                fab     = fab,
+                content = content,
+                toolbar = toolbar,
+                collapsible = {
+                    always += {
+                        title ("")
+                        titleEnabled (false)
+                    }
                 }
-            }
             )
         }
 
     }
 
-    class Collapsible(
+    class Collapsible (
         private val draggable   : Boolean = false,
         private val fab         : Element<FloatingActionButton>.()    -> Unit = {},
         private val content     : Element<SwipeRefreshLayout>.()      -> Unit = {},
@@ -83,16 +83,16 @@ object Layouts {
                 appBarLayout {
                     configure<AppBarLayout> {
                         once += {
-                        val behavior = Behavior ()
-                            behavior.setDragCallback (drag (draggable))
+                            val behavior = Behavior ()
+                                behavior.setDragCallback (drag (draggable))
 
-                        val params = layoutParams as CoordinatorLayout.LayoutParams
-                            params.behavior = behavior
+                            val params = layoutParams as CoordinatorLayout.LayoutParams
+                                params.behavior = behavior
                         }
 
                         always += {
-                        size (MATCH, WRAP)
-                        expanded (false)
+                            size (MATCH, WRAP)
+                            expanded (false)
                         }
 
                         appbar (this)
@@ -101,13 +101,13 @@ object Layouts {
                     collapsingToolbarLayout {
                         configure<CollapsingToolbarLayout> {
                             once += {
-                            val params = layoutParams as AppBarLayout.LayoutParams
-                                params.scrollFlags = params.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+                                val params = layoutParams as AppBarLayout.LayoutParams
+                                    params.scrollFlags = params.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
                             }
 
                             always += {
-                            size (MATCH, MATCH)
-                            titleEnabled (true)
+                                size (MATCH, MATCH)
+                                titleEnabled (true)
                             }
 
                             collapsible (this)
@@ -116,15 +116,15 @@ object Layouts {
                         toolbar {
                             configure<Toolbar> {
                                 once += {
-                                val params = layoutParams as CollapsingToolbarLayout.LayoutParams
-                                    params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
+                                    val params = layoutParams as CollapsingToolbarLayout.LayoutParams
+                                        params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
 
-                                elevation = -1.0f
+                                    elevation = -1.0f
                                 }
 
                                 always += {
-                                size (MATCH, dip (56))
-                                popupTheme (R.style.AppTheme_PopupOverlay)
+                                    size (MATCH, dip (56))
+                                    popupTheme (R.style.AppTheme_PopupOverlay)
                                 }
 
                                 toolbar (this)
@@ -136,12 +136,12 @@ object Layouts {
                 swipeRefreshLayout {
                     configure<SwipeRefreshLayout> {
                         always += {
-                        id (viewID ("content"))
+                            id (viewID ("content"))
 
-                        layoutParams (scrolling)
-                        size (MATCH, MATCH)
+                            layoutParams (scrolling)
+                            size (MATCH, MATCH)
 
-                        onRefresh {}
+                            onRefresh {}
                         }
 
                         content (this)
@@ -151,19 +151,19 @@ object Layouts {
                 floatingActionButton {
                     configure<FloatingActionButton> {
                         once += {
-                        val params = layoutParams as CoordinatorLayout.LayoutParams
-                            params.anchorId = viewID ("content")
-                            params.anchorGravity = Gravity.BOTTOM or Gravity.END
+                            val params = layoutParams as CoordinatorLayout.LayoutParams
+                                params.anchorId = viewID ("content")
+                                params.anchorGravity = Gravity.BOTTOM or Gravity.END
                         }
 
                         always += {
-                        visibility (false)
+                            visibility (false)
 
-                        size (WRAP, WRAP)
-                        margin (dip (16))
+                            size (WRAP, WRAP)
+                            margin (dip (16))
 
-                        onClick {}
-                        onLongClick { false }
+                            onClick {}
+                            onLongClick { false }
                         }
 
                         fab (this)

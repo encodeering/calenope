@@ -36,9 +36,9 @@ import trikita.anvil.DSL.textView
  */
 
 class WeekviewEditor (
-        private val context : Context,
-        private val speech  : Speech,
-        private val store   : Storage<State>
+    private val context : Context,
+    private val speech  : Speech,
+    private val store   : Storage<State>
 ) : Component () {
 
     override fun view () {
@@ -67,90 +67,90 @@ class WeekviewEditor (
                     }
 
                     component {
-                    Speechinput(interaction.title, context.getString (R.string.weekview_editor_title),
-                        input = {
-                            always += {
-                            onEditorAction (editorwatch {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (title = text.toString ()), visualize = true))
-                                    }
-                                }
-                            })
-                            }
-                        },
-                        button = {
-                            always += {
-                            onClick {
-                                speech.ask (context.getString (R.string.weekview_editor_title)) {
-                                    store.state.events.interaction.apply {
-                                        when (this) {
-                                            is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (title = it), visualize = true))
-                                        }
-                                    }
-                                }
-                            }
-                            }
-                        })
-                    }
-
-                    component {
-                    Speechinput(interaction.description, context.getString (R.string.weekview_editor_description),
-                        input = {
-                            always += {
-                            onEditorAction (editorwatch {
-                                store.state.events.interaction.apply {
-                                    when (this) {
-                                        is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (description = text.toString ()), visualize = true))
-                                    }
-                                }
-                            })
-                            }
-                        },
-                        button = {
-                            always += {
-                            onClick {
-                                speech.ask (context.getString (R.string.weekview_editor_description)) {
-                                    store.state.events.interaction.apply {
-                                        when (this) {
-                                            is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
-                                        }
-                                    }
-                                }
-                            }
-                            }
-                        })
-                    }
-
-                    component {
-                    Button(R.drawable.ic_timelapse) {
-                        always += {
-                        margin (0, dip (20), dip (20), 0)
-                        layoutGravity (Gravity.RIGHT)
-                        onClick {
-                            store.state.events.interaction.apply {
-                                when (this) {
-                                    is Interaction.Create -> start.plusMinutes (15).let {
-                                        val listener : (TimePicker, Int, Int) -> Unit = { _, hour, minute ->
-                                            val to = it.withMinuteOfHour (minute)
-                                                    .withHourOfDay (hour)
-
-                                            if (to.isAfter (it)) {
-                                                store.dispatcher.dispatch (Interact (copy (end = to), visualize = true))
+                        Speechinput (interaction.title, context.getString (R.string.weekview_editor_title),
+                            input = {
+                                always += {
+                                    onEditorAction (editorwatch {
+                                        store.state.events.interaction.apply {
+                                            when (this) {
+                                                is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (title = text.toString ()), visualize = true))
                                             }
                                         }
+                                    })
+                                }
+                            },
+                            button = {
+                                always += {
+                                    onClick {
+                                        speech.ask (context.getString (R.string.weekview_editor_title)) {
+                                            store.state.events.interaction.apply {
+                                                when (this) {
+                                                    is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (title = it), visualize = true))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                    }
 
-                                        TimePickerDialog (context, listener, it.hourOfDay, it.minuteOfHour, true).run {
-                                            setCancelable (true)
-                                            setTitle (context.getString (R.string.weekview_editor_date))
-                                            show ()
+                    component {
+                        Speechinput (interaction.description, context.getString (R.string.weekview_editor_description),
+                            input = {
+                                always += {
+                                    onEditorAction (editorwatch {
+                                        store.state.events.interaction.apply {
+                                            when (this) {
+                                                is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (description = text.toString ()), visualize = true))
+                                            }
+                                        }
+                                    })
+                                }
+                            },
+                            button = {
+                                always += {
+                                    onClick {
+                                        speech.ask (context.getString (R.string.weekview_editor_description)) {
+                                            store.state.events.interaction.apply {
+                                                when (this) {
+                                                    is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                    }
+
+                    component {
+                        Button (R.drawable.ic_timelapse) {
+                            always += {
+                                margin (0, dip (20), dip (20), 0)
+                                layoutGravity (Gravity.RIGHT)
+                                onClick {
+                                    store.state.events.interaction.apply {
+                                        when (this) {
+                                            is Interaction.Create -> start.plusMinutes (15).let {
+                                                val listener : (TimePicker, Int, Int) -> Unit = { _, hour, minute ->
+                                                val to = it.withMinuteOfHour (minute)
+                                                           .withHourOfDay (hour)
+
+                                                    if (to.isAfter (it)) {
+                                                        store.dispatcher.dispatch (Interact (copy (end = to), visualize = true))
+                                                    }
+                                                }
+
+                                                TimePickerDialog (context, listener, it.hourOfDay, it.minuteOfHour, true).run {
+                                                    setCancelable (true)
+                                                    setTitle (context.getString (R.string.weekview_editor_date))
+                                                    show ()
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                        }
-                    }
                     }
                 }
             }

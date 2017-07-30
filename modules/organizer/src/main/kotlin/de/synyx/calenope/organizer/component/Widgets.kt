@@ -31,9 +31,9 @@ import trikita.anvil.design.DesignDSL.textInputLayout
 /**
  * @author clausen - clausen@synyx.de
  */
-object Widgets  {
+object Widgets {
 
-    class Button(
+    class Button (
         private val resource : Int,
         private val button   : Element<ImageButton>.() -> Unit = {}
     ) : Component () {
@@ -42,14 +42,14 @@ object Widgets  {
             imageButton {
                 configure<ImageButton> {
                     once += {
-                    size (dip (48), dip (48))
-                    imageResource (resource)
-                    backgroundResource (R.color.primary)
+                        size (dip (48), dip (48))
+                        imageResource (resource)
+                        backgroundResource (R.color.primary)
                     }
 
                     always += {
-                    onClick {}
-                    onLongClick { false }
+                        onClick {}
+                        onLongClick { false }
                     }
 
                     button (this)
@@ -59,7 +59,7 @@ object Widgets  {
 
     }
 
-    class Speechinput(
+    class Speechinput (
         private val text   : CharSequence? = "",
         private val hint   : CharSequence? = "",
         private val input  : Element<TextInputEditText>.() -> Unit  = {},
@@ -76,22 +76,22 @@ object Widgets  {
                 textInputLayout {
                     configure<TextInputLayout> {
                         once += {
-                        size (MATCH, WRAP)
-                        weight (1.0f)
-                        hint (this@Speechinput.hint)
+                            size (MATCH, WRAP)
+                            weight (1.0f)
+                            hint (this@Speechinput.hint)
                         }
                     }
 
                     textInputEditText {
                         configure<TextInputEditText> {
                             once += {
-                            size (MATCH, dip (40))
-                            inputType (InputType.TYPE_CLASS_TEXT)
+                                size (MATCH, dip (40))
+                                inputType (InputType.TYPE_CLASS_TEXT)
                             }
 
                             always += {
-                            text (this@Speechinput.text)
-                            onEditorAction { _, _, _ -> false }
+                                text (this@Speechinput.text)
+                                onEditorAction { _, _, _ -> false }
                             }
 
                             input (this)
@@ -100,17 +100,15 @@ object Widgets  {
                 }
 
                 component {
-                Button (R.drawable.ic_record) {
-                    once += {
-                        layoutGravity (Gravity.END)
+                    Button (R.drawable.ic_record) {
+                        once += {
+                            layoutGravity (Gravity.END)
+                        }
+
+                        button (this)
                     }
-
-
-                    button (this)
-                }
                 }
             }
         }
-
     }
 }

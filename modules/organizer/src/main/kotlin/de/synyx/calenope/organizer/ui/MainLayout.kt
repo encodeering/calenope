@@ -125,7 +125,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                 textView {
                     size (MATCH, MATCH)
                     text (item)
-                    textSize (sip (10.toFloat()))
+                    textSize (sip (10.toFloat ()))
                     textColor (if (! store.state.overview.filtering || tiles.selected (position)) color (R.color.primary_text) else color (R.color.secondary_text))
                     centerHorizontal ()
                     margin (dip (20))
@@ -164,43 +164,43 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
     }
 
     val overview by lazy {
-        Regular(
+        Regular (
             content = {
                 always += {
-                refreshing(store.state.overview.synchronizing)
-                onRefresh { store.dispatcher.dispatch(SynchronizeAccount()) }
+                    refreshing (store.state.overview.synchronizing)
+                    onRefresh { store.dispatcher.dispatch (SynchronizeAccount ()) }
 
-                recyclerView {
-                    anvilonce<View> {
-                        layoutManager(LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false))
-                        itemAnimator(DefaultItemAnimator())
-                        gridLayoutManager(1)
-                        adapter(tiles)
+                    recyclerView {
+                        anvilonce<View> {
+                            layoutManager (LinearLayoutManager (context, LinearLayoutManager.VERTICAL, false))
+                            itemAnimator (DefaultItemAnimator ())
+                            gridLayoutManager (1)
+                            adapter (tiles)
+                        }
                     }
-                }
                 }
             },
 
             toolbar = {
                 once += {
-                        menu.clear()
-                        inflateMenu(R.menu.overview)
+                    menu.clear ()
+                    inflateMenu (R.menu.overview)
 
-                        onMenuItemClick(Toolbar.OnMenuItemClickListener {
-                            when (it.itemId) {
-                                R.id.overview_settings_open -> {
-                                    store.dispatcher.dispatch(OpenSettings(main))
-                                    true
-                                }
-                                else                        -> false
+                    onMenuItemClick (Toolbar.OnMenuItemClickListener {
+                        when (it.itemId) {
+                            R.id.overview_settings_open -> {
+                                store.dispatcher.dispatch (OpenSettings (main))
+                                true
                             }
-                        })
+                            else                        -> false
+                        }
+                    })
 
-                        titleTextColor(Color.WHITE)
+                    titleTextColor (Color.WHITE)
                 }
 
                 always += {
-                        title (store.state.setting.account)
+                    title (store.state.setting.account)
                 }
             }
         )
