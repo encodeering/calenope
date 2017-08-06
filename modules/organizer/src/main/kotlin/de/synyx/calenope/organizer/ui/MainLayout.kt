@@ -166,8 +166,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
     val overview by lazy {
         Regular(
             content = {
-                if (it) return@Regular
-
+                always += {
                 refreshing(store.state.overview.synchronizing)
                 onRefresh { store.dispatcher.dispatch(SynchronizeAccount()) }
 
@@ -179,11 +178,11 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                         adapter(tiles)
                     }
                 }
+                }
             },
 
             toolbar = {
-                when (it) {
-                    true  -> {
+                once += {
                         menu.clear()
                         inflateMenu(R.menu.overview)
 
@@ -198,10 +197,10 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                         })
 
                         titleTextColor(Color.WHITE)
-                    }
-                    false -> {
+                }
+
+                always += {
                         title (store.state.setting.account)
-                    }
                 }
             }
         )

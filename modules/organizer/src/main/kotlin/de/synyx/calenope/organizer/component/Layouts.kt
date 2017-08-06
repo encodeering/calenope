@@ -10,8 +10,6 @@ import android.support.v7.widget.Toolbar
 import android.view.Gravity
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.ui.anvilcast
-import de.synyx.calenope.organizer.ui.anvilonce
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
 import trikita.anvil.DSL.dip
@@ -47,9 +45,9 @@ object Layouts {
     }
 
     class Regular(
-        private val fab     : FloatingActionButton.(Boolean) -> Unit = {},
-        private val content : SwipeRefreshLayout.(Boolean )  -> Unit = {},
-        private val toolbar : Toolbar.(Boolean)              -> Unit = {}
+        private val fab     : Element<FloatingActionButton>.() -> Unit = {},
+        private val content : Element<SwipeRefreshLayout>.()   -> Unit = {},
+        private val toolbar : Element<Toolbar>.()              -> Unit = {}
     ) : Component () {
 
         override fun view () = component ("layout") {
@@ -58,10 +56,10 @@ object Layouts {
             content = content,
             toolbar = toolbar,
             collapsible = {
-                if (it) return@Collapsible
-
+                always += {
                 title ("")
                 titleEnabled (false)
+                }
             }
             )
         }
@@ -70,11 +68,11 @@ object Layouts {
 
     class Collapsible(
         private val draggable   : Boolean = false,
-        private val fab         : FloatingActionButton.(Boolean)    -> Unit = {},
-        private val content     : SwipeRefreshLayout.(Boolean)      -> Unit = {},
-        private val appbar      : AppBarLayout.(Boolean)            -> Unit = {},
-        private val toolbar     : Toolbar.(Boolean)                 -> Unit = {},
-        private val collapsible : CollapsingToolbarLayout.(Boolean) -> Unit = {}
+        private val fab         : Element<FloatingActionButton>.()    -> Unit = {},
+        private val content     : Element<SwipeRefreshLayout>.()      -> Unit = {},
+        private val appbar      : Element<AppBarLayout>.()            -> Unit = {},
+        private val toolbar     : Element<Toolbar>.()                 -> Unit = {},
+        private val collapsible : Element<CollapsingToolbarLayout>.() -> Unit = {}
     ) : Component () {
 
         override fun view () {
@@ -83,85 +81,82 @@ object Layouts {
                 orientation (LinearLayout.VERTICAL)
 
                 appBarLayout {
-                    anvilonce<AppBarLayout> {
+                    configure<AppBarLayout> {
+                        once += {
                         val behavior = Behavior ()
                             behavior.setDragCallback (drag (draggable))
 
                         val params = layoutParams as CoordinatorLayout.LayoutParams
                             params.behavior = behavior
+                        }
 
-                        appbar (true)
-                    }
-
-                    anvilcast<AppBarLayout> {
+                        always += {
                         size (MATCH, WRAP)
                         expanded (false)
+                        }
 
-                        appbar (false)
+                        appbar (this)
                     }
 
                     collapsingToolbarLayout {
-                        anvilonce<CollapsingToolbarLayout> {
+                        configure<CollapsingToolbarLayout> {
+                            once += {
                             val params = layoutParams as AppBarLayout.LayoutParams
                                 params.scrollFlags = params.scrollFlags or AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED
+                            }
 
-                            collapsible (true)
-                        }
-
-                        anvilcast<CollapsingToolbarLayout> {
+                            always += {
                             size (MATCH, MATCH)
                             titleEnabled (true)
+                            }
 
-                            collapsible (false)
+                            collapsible (this)
                         }
 
                         toolbar {
-                            anvilonce<Toolbar> {
+                            configure<Toolbar> {
+                                once += {
                                 val params = layoutParams as CollapsingToolbarLayout.LayoutParams
                                     params.collapseMode = CollapsingToolbarLayout.LayoutParams.COLLAPSE_MODE_PIN
 
                                 elevation = -1.0f
+                                }
 
-                                toolbar (true)
-                            }
-
-                            anvilcast<Toolbar> {
+                                always += {
                                 size (MATCH, dip (56))
                                 popupTheme (R.style.AppTheme_PopupOverlay)
+                                }
 
-                                toolbar (false)
+                                toolbar (this)
                             }
                         }
                     }
                 }
 
                 swipeRefreshLayout {
-                    anvilonce<SwipeRefreshLayout> {
-                        content (true)
-                    }
-
-                    anvilcast<SwipeRefreshLayout> {
+                    configure<SwipeRefreshLayout> {
+                        always += {
                         id (viewID ("content"))
 
                         layoutParams (scrolling)
                         size (MATCH, MATCH)
 
                         onRefresh {}
+                        }
 
-                        content (false)
+                        content (this)
                     }
                 }
 
                 floatingActionButton {
-                    anvilonce<FloatingActionButton> {
+                    configure<FloatingActionButton> {
+                        once += {
                         val params = layoutParams as CoordinatorLayout.LayoutParams
                             params.anchorId = viewID ("content")
                             params.anchorGravity = Gravity.BOTTOM or Gravity.END
+                        }
 
-                        fab (true)
-                    }
-
-                    anvilcast<FloatingActionButton> {
+                        always += {
                         visibility (false)
 
                         size (WRAP, WRAP)
@@ -169,8 +164,9 @@ object Layouts {
 
                         onClick {}
                         onLongClick { false }
+                        }
 
-                        fab (false)
+                        fab (this)
                     }
                 }
             }

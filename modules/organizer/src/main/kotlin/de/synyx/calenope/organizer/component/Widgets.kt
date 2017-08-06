@@ -7,8 +7,6 @@ import android.view.Gravity
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import de.synyx.calenope.organizer.R
-import de.synyx.calenope.organizer.ui.anvilcast
-import de.synyx.calenope.organizer.ui.anvilonce
 import trikita.anvil.BaseDSL.MATCH
 import trikita.anvil.BaseDSL.WRAP
 import trikita.anvil.BaseDSL.layoutGravity
@@ -37,20 +35,22 @@ object Widgets  {
 
     class Button(
         private val resource : Int,
-        private val button   : ImageButton.() -> Unit = {}
+        private val button   : Element<ImageButton>.() -> Unit = {}
     ) : Component () {
 
         override fun view () {
             imageButton {
-                anvilonce<android.widget.ImageButton> {
+                configure<ImageButton> {
+                    once += {
                     size (dip (48), dip (48))
                     imageResource (resource)
                     backgroundResource (R.color.primary)
-                }
+                    }
 
-                anvilcast<ImageButton> {
+                    always += {
                     onClick {}
                     onLongClick { false }
+                    }
 
                     button (this)
                 }
@@ -62,8 +62,8 @@ object Widgets  {
     class Speechinput(
         private val text   : CharSequence? = "",
         private val hint   : CharSequence? = "",
-        private val input  : TextInputEditText.() -> Unit  = {},
-        private val button : ImageButton.() -> Unit        = {}
+        private val input  : Element<TextInputEditText>.() -> Unit  = {},
+        private val button : Element<ImageButton>.() -> Unit        = {}
     ) : Component ()  {
 
         override fun view () {
@@ -74,21 +74,25 @@ object Widgets  {
                 margin (dip (20), dip (20), dip (20), 0)
 
                 textInputLayout {
-                    anvilonce<TextInputLayout> {
+                    configure<TextInputLayout> {
+                        once += {
                         size (MATCH, WRAP)
                         weight (1.0f)
                         hint (this@Speechinput.hint)
+                        }
                     }
 
                     textInputEditText {
-                        anvilonce<TextInputEditText> {
+                        configure<TextInputEditText> {
+                            once += {
                             size (MATCH, dip (40))
                             inputType (InputType.TYPE_CLASS_TEXT)
-                        }
+                            }
 
-                        anvilcast<TextInputEditText> {
+                            always += {
                             text (this@Speechinput.text)
                             onEditorAction { _, _, _ -> false }
+                            }
 
                             input (this)
                         }
@@ -97,17 +101,16 @@ object Widgets  {
 
                 component {
                 Button (R.drawable.ic_record) {
-                    anvilonce<ImageButton> {
+                    once += {
                         layoutGravity (Gravity.END)
                     }
 
-                    anvilcast<ImageButton> {
-                        button (this)
-                    }
+
+                    button (this)
+                }
                 }
             }
         }
-    }
 
     }
 }

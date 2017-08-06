@@ -85,9 +85,11 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
     val weekview by lazy {
         Collapsible (
             fab = {
-                when (it) {
-                    true  -> alpha (0.0f)
-                    false -> {
+                once += {
+                        alpha (0.0f)
+                }
+
+                always += {
                         visibility (true)
 
                         onClick {}
@@ -134,13 +136,11 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                             is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
                             else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
                         }
-                    }
                 }
             },
 
             content = {
-                if (it) return@Collapsible
-
+                always += {
                 v (WeekviewTouchProxy::class.java) {
                     anvilonce<WeekviewTouchProxy> {
                         id (R.id.weekview_proxy)
@@ -225,17 +225,17 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                         ))
                     }
                 }
+                }
             },
 
             appbar = {
-                if (it) return@Collapsible
-
+                always += {
                 expanded (store.state.events.visualize)
+                }
             },
 
             collapsible = {
-                if (it) return@Collapsible
-
+                always += {
                 contentScrimResource (R.color.primary)
 
                 collapsedTitleTextColor (Color.WHITE)
@@ -254,6 +254,7 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                 title (subject)
 
                 editor.view ()
+                }
             }
         )
     }

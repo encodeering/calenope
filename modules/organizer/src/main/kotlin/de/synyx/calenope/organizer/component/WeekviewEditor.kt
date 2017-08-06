@@ -16,7 +16,6 @@ import de.synyx.calenope.organizer.State
 import de.synyx.calenope.organizer.component.Widgets.Button
 import de.synyx.calenope.organizer.component.Widgets.Speechinput
 import de.synyx.calenope.organizer.speech.Speech
-import de.synyx.calenope.organizer.ui.anvilonce
 import trikita.anvil.BaseDSL.layoutGravity
 import trikita.anvil.DSL.MATCH
 import trikita.anvil.DSL.WRAP
@@ -44,10 +43,8 @@ class WeekviewEditor (
 
     override fun view () {
         linearLayout {
-            anvilonce<LinearLayout> {
-                size (MATCH, dip (210))
-                orientation (LinearLayout.VERTICAL)
-            }
+            size (MATCH, dip (210))
+            orientation (LinearLayout.VERTICAL)
 
             val   interaction = store.state.events.interaction
             when (interaction) {
@@ -72,6 +69,7 @@ class WeekviewEditor (
                     component {
                     Speechinput(interaction.title, context.getString (R.string.weekview_editor_title),
                         input = {
+                            always += {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -79,8 +77,10 @@ class WeekviewEditor (
                                     }
                                 }
                             })
+                            }
                         },
                         button = {
+                            always += {
                             onClick {
                                 speech.ask (context.getString (R.string.weekview_editor_title)) {
                                     store.state.events.interaction.apply {
@@ -90,13 +90,14 @@ class WeekviewEditor (
                                     }
                                 }
                             }
-                        }
-                    )
+                            }
+                        })
                     }
 
                     component {
                     Speechinput(interaction.description, context.getString (R.string.weekview_editor_description),
                         input = {
+                            always += {
                             onEditorAction (editorwatch {
                                 store.state.events.interaction.apply {
                                     when (this) {
@@ -104,8 +105,10 @@ class WeekviewEditor (
                                     }
                                 }
                             })
+                            }
                         },
                         button = {
+                            always += {
                             onClick {
                                 speech.ask (context.getString (R.string.weekview_editor_description)) {
                                     store.state.events.interaction.apply {
@@ -115,12 +118,13 @@ class WeekviewEditor (
                                     }
                                 }
                             }
-                        }
-                    )
+                            }
+                        })
                     }
 
                     component {
                     Button(R.drawable.ic_timelapse) {
+                        always += {
                         margin (0, dip (20), dip (20), 0)
                         layoutGravity (Gravity.RIGHT)
                         onClick {
@@ -144,6 +148,7 @@ class WeekviewEditor (
                                     }
                                 }
                             }
+                        }
                         }
                     }
                     }
