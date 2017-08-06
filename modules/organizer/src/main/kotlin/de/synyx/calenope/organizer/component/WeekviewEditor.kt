@@ -105,7 +105,7 @@ class WeekviewEditor (
                         },
                         button = {
                             onClick {
-                                speech.ask (context.getString (R.string.weekview_editor_title)) {
+                                speech.ask (context.getString (R.string.weekview_editor_description)) {
                                     store.state.events.interaction.apply {
                                         when (this) {
                                             is Interaction.Create -> store.dispatcher.dispatch (Interact (copy (description = it), visualize = true))
