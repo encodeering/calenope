@@ -33,8 +33,8 @@ abstract class Component : Anvil.Renderable {
 
     class Element<C> (val component : Component, val view : C) : Anvil.Renderable {
 
-        val once   by lazy { Customization<C> () }
-        val always by lazy { Customization<C> () }
+        val once   by lazy { Customization<C.(Component) -> Unit> () }
+        val always by lazy { Customization<C.(Component) -> Unit> () }
 
         override fun view () {
             anvilonce<View> {
@@ -47,9 +47,9 @@ abstract class Component : Anvil.Renderable {
 
     class Customization<C> {
 
-        val actions = mutableListOf<C.(Component) -> Unit> ()
+        val actions = mutableListOf<C> ()
 
-        operator fun plusAssign (action : C.(Component) -> Unit) {
+        operator fun plusAssign (action : C) {
             actions += action
         }
 
