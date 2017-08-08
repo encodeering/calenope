@@ -36,8 +36,8 @@ abstract class Component : Anvil.Renderable {
 
     class Element<C> (val component : Component, val view : C) : Anvil.Renderable {
 
-        val once   by lazy { Customization<C.(Component) -> Unit> () }
-        val always by lazy { Customization<C.(Component) -> Unit> () }
+        val once   by lazy { Customization<C.() -> Unit> () }
+        val always by lazy { Customization<C.() -> Unit> () }
 
         fun pin (name : String, component : () -> Component) {
             always += {
@@ -51,12 +51,16 @@ abstract class Component : Anvil.Renderable {
             }
         }
 
+        fun viewID                               (name : String) : Int {
+            return this@Element.component.viewID (name)
+        }
+
         override fun view () {
             anvilonce<View> {
-                once.actions.forEach { it (view, component) }
+                once.actions.forEach { it (view) }
             }
 
-            always.actions.forEach { it (view, component) }
+            always.actions.forEach { it (view) }
         }
     }
 
