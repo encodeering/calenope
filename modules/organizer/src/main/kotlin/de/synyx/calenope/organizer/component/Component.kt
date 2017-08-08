@@ -30,29 +30,29 @@ abstract class Component : Anvil.Renderable {
 
     protected inline fun <reified C : View> configure (crossinline code : Element<C>.() -> Unit) {
         anvilcast<C> {
-            Element (this@Component, this@anvilcast).apply { code (this) }.view ()
+            Element ( this@anvilcast).apply { code (this) }.view ()
         }
     }
 
-    class Element<C> (val component : Component, val view : C) : Anvil.Renderable {
+    inner class Element<C> (val view : C) : Anvil.Renderable {
 
         val once   by lazy { Customization<C.() -> Unit> () }
         val always by lazy { Customization<C.() -> Unit> () }
 
         fun pin (name : String, component : () -> Component) {
             always += {
-                this@Element.component.pin (name, component)
+                this@Component.pin (name, component)
             }
         }
 
         fun show (component : () -> Component) {
             always += {
-                this@Element.component.show (component)
+                this@Component.show (component)
             }
         }
 
         fun viewID                               (name : String) : Int {
-            return this@Element.component.viewID (name)
+            return this@Component.viewID (name)
         }
 
         override fun view () {
