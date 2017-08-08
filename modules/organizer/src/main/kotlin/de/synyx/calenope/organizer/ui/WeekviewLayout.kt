@@ -60,8 +60,6 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
 
     private val store by lazy { Application.store }
 
-    private val editor : WeekviewEditor = WeekviewEditor (weekview, speech, store)
-
     private lateinit var events : MonthLoaderAdapter
 
     private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
@@ -252,8 +250,10 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                     }
 
                     title (subject)
+                }
 
-                    editor.view ()
+                component ("editor") {
+                    WeekviewEditor (weekview, speech, store)
                 }
             }
         )

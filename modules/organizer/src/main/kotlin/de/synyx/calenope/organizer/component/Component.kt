@@ -36,6 +36,12 @@ abstract class Component : Anvil.Renderable {
         val once   by lazy { Customization<C.(Component) -> Unit> () }
         val always by lazy { Customization<C.(Component) -> Unit> () }
 
+        fun component (name : String? = null, component : () -> Component) {
+            always += {
+                this@Element.component.component (name, component)
+            }
+        }
+
         override fun view () {
             anvilonce<View> {
                 once.actions.forEach { it (view, component) }
