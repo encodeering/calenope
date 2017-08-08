@@ -24,7 +24,7 @@ abstract class Component : Anvil.Renderable {
                         component   ().view ()
     }
 
-    protected fun viewID            (name : String) : Int {
+    private fun viewID              (name : String) : Int {
         return identifiers.getOrPut (name) { View.generateViewId () }
     }
 
@@ -51,8 +51,8 @@ abstract class Component : Anvil.Renderable {
             }
         }
 
-        fun viewID                               (name : String) : Int {
-            return this@Component.viewID (name)
+        fun String.viewID () : Int {
+            return this@Component.viewID (this)
         }
 
         override fun view () {

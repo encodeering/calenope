@@ -136,7 +136,7 @@ object Layouts {
                 swipeRefreshLayout {
                     configure<SwipeRefreshLayout> {
                         always += {
-                            id (viewID ("content"))
+                            id ("content".viewID ())
 
                             layoutParams (scrolling)
                             size (MATCH, MATCH)
@@ -152,7 +152,7 @@ object Layouts {
                     configure<FloatingActionButton> {
                         once += {
                             val params = layoutParams as CoordinatorLayout.LayoutParams
-                                params.anchorId = viewID ("content")
+                                params.anchorId = "content".viewID ()
                                 params.anchorGravity = Gravity.BOTTOM or Gravity.END
                         }
 
