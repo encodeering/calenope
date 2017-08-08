@@ -50,7 +50,7 @@ object Layouts {
         private val toolbar : Element<Toolbar>.()              -> Unit = {}
     ) : Component () {
 
-        override fun view () = component ("layout") {
+        override fun view () = pin ("layout") {
             Collapsible (
                 fab     = fab,
                 content = content,

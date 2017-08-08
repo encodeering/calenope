@@ -15,10 +15,13 @@ abstract class Component : Anvil.Renderable {
     private val identifiers : ConcurrentMap<String, Int> = ConcurrentHashMap ()
     private val components  : ConcurrentMap<String, Component> = ConcurrentHashMap ()
 
-    protected fun component (name : String? = null,                   component : () -> Component) {
-        val v = if          (name != null) components.getOrPut (name, component) else component ()
+    protected fun pin       (name : String, component : () -> Component) {
+        components.getOrPut (name, component).view ()
+    }
 
-        v.view ()
+
+    protected fun show (component : () -> Component) {
+                        component   ().view ()
     }
 
     protected fun viewID            (name : String) : Int {
@@ -36,9 +39,15 @@ abstract class Component : Anvil.Renderable {
         val once   by lazy { Customization<C.(Component) -> Unit> () }
         val always by lazy { Customization<C.(Component) -> Unit> () }
 
-        fun component (name : String? = null, component : () -> Component) {
+        fun pin (name : String, component : () -> Component) {
             always += {
-                this@Element.component.component (name, component)
+                this@Element.component.pin (name, component)
+            }
+        }
+
+        fun show (component : () -> Component) {
+            always += {
+                this@Element.component.show (component)
             }
         }
 

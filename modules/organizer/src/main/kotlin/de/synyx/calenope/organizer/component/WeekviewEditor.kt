@@ -66,7 +66,7 @@ class WeekviewEditor (
                         false
                     }
 
-                    component {
+                    show {
                         Speechinput (interaction.title, context.getString (R.string.weekview_editor_title),
                             input = {
                                 always += {
@@ -94,7 +94,7 @@ class WeekviewEditor (
                             })
                     }
 
-                    component {
+                    show {
                         Speechinput (interaction.description, context.getString (R.string.weekview_editor_description),
                             input = {
                                 always += {
@@ -122,7 +122,7 @@ class WeekviewEditor (
                             })
                     }
 
-                    component {
+                    show {
                         Button (R.drawable.ic_timelapse) {
                             always += {
                                 margin (0, dip (20), dip (20), 0)

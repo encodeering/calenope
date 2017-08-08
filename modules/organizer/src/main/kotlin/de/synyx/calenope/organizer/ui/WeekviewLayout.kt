@@ -252,7 +252,7 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
                     title (subject)
                 }
 
-                component ("editor") {
+                pin ("editor") {
                     WeekviewEditor (weekview, speech, store)
                 }
             }

@@ -99,7 +99,7 @@ object Widgets {
                     }
                 }
 
-                component {
+                show {
                     Button (R.drawable.ic_record) {
                         once += {
                             layoutGravity (Gravity.END)
