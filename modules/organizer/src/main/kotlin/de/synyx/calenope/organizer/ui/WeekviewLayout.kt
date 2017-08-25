@@ -60,8 +60,6 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
 
     private val store by lazy { Application.store }
 
-    private val editor : WeekviewEditor = WeekviewEditor (weekview, speech, store)
-
     private lateinit var events : MonthLoaderAdapter
 
     private var swipeable by Delegates.observable (true) { property, previous, next -> if (next != previous) Anvil.render () }
@@ -85,175 +83,178 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
     val weekview by lazy {
         Collapsible (
             fab = {
-                when (it) {
-                    true  -> alpha (0.0f)
-                    false -> {
-                        visibility (true)
+                once += {
+                    alpha (0.0f)
+                }
 
-                        onClick {}
+                always += {
+                    visibility (true)
 
-                        val   visualize   = store.state.events.visualize
-                        val   interaction = store.state.events.interaction
-                        when (interaction) {
-                            is Create -> {
-                                if (visualize) {
-                                    imageResource (R.drawable.ic_save)
-                                    onClick {
-                                        store.state.events.interaction.apply {
-                                            when (this) {
-                                                is Create -> store.dispatcher.dispatch (Interact (copy (draft = false)))
-                                            }
-                                        }
-                                    }
-                                }
+                    onClick {}
 
-                                else {
-                                    imageResource (R.drawable.ic_add)
-                                    onClick {
-                                        store.state.events.interaction.apply {
-                                            when (this) {
-                                                is Create -> store.dispatcher.dispatch (Interact (this, visualize = true))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            is Inspect -> {
-                                imageResource (R.drawable.ic_subject)
+                    val   visualize   = store.state.events.visualize
+                    val   interaction = store.state.events.interaction
+                    when (interaction) {
+                        is Create -> {
+                            if (visualize) {
+                                imageResource (R.drawable.ic_save)
                                 onClick {
                                     store.state.events.interaction.apply {
                                         when (this) {
-                                            is Inspect -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                            is Create -> store.dispatcher.dispatch (Interact (copy (draft = false)))
+                                        }
+                                    }
+                                }
+                            }
+
+                            else {
+                                imageResource (R.drawable.ic_add)
+                                onClick {
+                                    store.state.events.interaction.apply {
+                                        when (this) {
+                                            is Create -> store.dispatcher.dispatch (Interact (this, visualize = true))
                                         }
                                     }
                                 }
                             }
                         }
-
-                        when (interaction) {
-                            is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
-                            else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
+                        is Inspect -> {
+                            imageResource (R.drawable.ic_subject)
+                            onClick {
+                                store.state.events.interaction.apply {
+                                    when (this) {
+                                        is Inspect -> store.dispatcher.dispatch (Interact (this, visualize = true))
+                                    }
+                                }
+                            }
                         }
+                    }
+
+                    when (interaction) {
+                        is Interaction.Read -> if (alpha  > 0)    animate ().alpha (0.0f).setDuration (500L).start ()
+                        else                -> if (alpha == 0.0f) animate ().alpha (1.0f).setDuration (500L).start ()
                     }
                 }
             },
 
             content = {
-                if (it) return@Collapsible
+                always += {
+                    v (WeekviewTouchProxy::class.java) {
+                        anvilonce<WeekviewTouchProxy> {
+                            id (R.id.weekview_proxy)
 
-                v (WeekviewTouchProxy::class.java) {
-                    anvilonce<WeekviewTouchProxy> {
-                        id (R.id.weekview_proxy)
+                            scrolling = object : WeekviewTouchProxy.Scrolling {
 
-                        scrolling = object : WeekviewTouchProxy.Scrolling {
+                                private var previous by Delegates.vetoable (Double.MIN_VALUE) {
+                                    _, previous,                       next ->
+                                       previous == Double.MIN_VALUE || next == Double.MIN_VALUE
+                                }
 
-                            private var previous by Delegates.vetoable (Double.MIN_VALUE) {
-                                _, previous,                       next ->
-                                   previous == Double.MIN_VALUE || next == Double.MIN_VALUE
+                                override fun top (state : Boolean) {
+                                    swipeable = state
+                                }
+
+                                override fun hour (earliest : Double) {
+                                    if (store.state.events.interaction == Interaction.Read)
+                                        return reset ()
+
+                                    if (store.state.events.visualize)
+                                        return reset ()
+
+                                    previous = earliest
+
+                                    val delta : Double = Math.abs (previous - earliest)
+                                    if (delta > 1) {
+                                        store.dispatcher.dispatch (Interact (Interaction.Read))
+                                    }
+                                }
+
+                                private fun reset () { previous = Double.MIN_VALUE }
+
                             }
 
-                            override fun top (state : Boolean) {
-                                swipeable = state
-                            }
+                            events = MonthLoaderAdapter (this, store)
 
-                            override fun hour (earliest : Double) {
-                                if (store.state.events.interaction == Interaction.Read)
-                                    return reset ()
+                            monthChangeListener         = events
+                            numberOfVisibleDays         = 1
+                            columnGap                   = dip (8)
+                            hourHeight                  = dip (600)
+                            headerColumnPadding         = dip (8)
+                            headerRowPadding            = dip (12)
+                            textSize                    = sip (10)
+                            eventTextSize               = sip (10)
+                            eventTextColor              = color (R.color.primary_text)
+                            defaultEventColor           = color (R.color.primary)
 
-                                if (store.state.events.visualize)
-                                    return reset ()
+                            headerColumnTextColor       = color (R.color.primary_text)
+                            headerColumnBackgroundColor = color (R.color.primary_dark)
+                            headerRowBackgroundColor    = color (R.color.primary_dark)
 
-                                previous = earliest
+                            dayBackgroundColor          = color (R.color.primary_light)
+                            todayBackgroundColor        = color (R.color.primary_light)
+                            todayHeaderTextColor        = color (R.color.primary_text)
 
-                                val delta : Double = Math.abs (previous - earliest)
-                                if (delta > 1) {
-                                    store.dispatcher.dispatch (Interact (Interaction.Read))
+                            hourSeparatorColor          = color (R.color.divider)
+
+                            setOnEventClickListener { event, _ ->
+                                events.convert       (event)?.let {
+                                    store.dispatcher.dispatch (
+                                            Interact (Inspect (it), visualize = store.state.events.visualize)
+                                    )
                                 }
                             }
 
-                            private fun reset () { previous = Double.MIN_VALUE }
-
-                        }
-
-                        events = MonthLoaderAdapter (this, store)
-
-                        monthChangeListener         = events
-                        numberOfVisibleDays         = 1
-                        columnGap                   = dip (8)
-                        hourHeight                  = dip (600)
-                        headerColumnPadding         = dip (8)
-                        headerRowPadding            = dip (12)
-                        textSize                    = sip (10)
-                        eventTextSize               = sip (10)
-                        eventTextColor              = color (R.color.primary_text)
-                        defaultEventColor           = color (R.color.primary)
-
-                        headerColumnTextColor       = color (R.color.primary_text)
-                        headerColumnBackgroundColor = color (R.color.primary_dark)
-                        headerRowBackgroundColor    = color (R.color.primary_dark)
-
-                        dayBackgroundColor          = color (R.color.primary_light)
-                        todayBackgroundColor        = color (R.color.primary_light)
-                        todayHeaderTextColor        = color (R.color.primary_text)
-
-                        hourSeparatorColor          = color (R.color.divider)
-
-                        setOnEventClickListener { event, _ ->
-                            events.convert       (event)?.let {
+                            setEmptyViewClickListener { calendar ->
                                 store.dispatcher.dispatch (
-                                        Interact (Inspect (it), visualize = store.state.events.visualize)
+                                            Interact (Create  (draft = true, start = DateTime (calendar.time).floor (15)), visualize = store.state.events.visualize)
                                 )
                             }
                         }
-
-                        setEmptyViewClickListener { calendar ->
-                            store.dispatcher.dispatch (
-                                        Interact (Create  (draft = true, start = DateTime (calendar.time).floor (15)), visualize = store.state.events.visualize)
-                            )
-                        }
                     }
-                }
 
-                enabled (swipeable)
+                    enabled (swipeable)
 
-                refreshing (store.state.events.synchronizing)
-                onRefresh {
-                    use<WeekviewTouchProxy> (R.id.weekview_proxy) {
-                        store.dispatcher.dispatch (SynchronizeCalendar (
-                            year  = firstVisibleDay.get (Calendar.YEAR),
-                            month = firstVisibleDay.get (Calendar.MONTH) + 1
-                        ))
+                    refreshing (store.state.events.synchronizing)
+                    onRefresh {
+                        use<WeekviewTouchProxy> (R.id.weekview_proxy) {
+                            store.dispatcher.dispatch (SynchronizeCalendar (
+                                year  = firstVisibleDay.get (Calendar.YEAR),
+                                month = firstVisibleDay.get (Calendar.MONTH) + 1
+                            ))
+                        }
                     }
                 }
             },
 
             appbar = {
-                if (it) return@Collapsible
-
-                expanded (store.state.events.visualize)
+                always += {
+                    expanded (store.state.events.visualize)
+                }
             },
 
             collapsible = {
-                if (it) return@Collapsible
+                always += {
+                    contentScrimResource (R.color.primary)
 
-                contentScrimResource (R.color.primary)
+                    collapsedTitleTextColor (Color.WHITE)
 
-                collapsedTitleTextColor (Color.WHITE)
+                    expandedTitleMarginBottom (dip (20))
+                    expandedTitleMarginStart  (dip (20))
 
-                expandedTitleMarginBottom (dip (20))
-                expandedTitleMarginStart  (dip (20))
-
-                val subject = store.state.events.interaction.let {
-                    when (it) {
-                        is Create  -> return@let it.start.toString ("HH:mm") + (it.end?.let { " - ${it.toString ("HH:mm")}" } ?: "")
-                        is Inspect -> return@let it.event.title ()
-                        else       -> return@let store.state.events.name
+                    val subject = store.state.events.interaction.let {
+                        when (it) {
+                            is Create  -> return@let it.start.toString ("HH:mm") + (it.end?.let { " - ${it.toString ("HH:mm")}" } ?: "")
+                            is Inspect -> return@let it.event.title ()
+                            else       -> return@let store.state.events.name
+                        }
                     }
+
+                    title (subject)
                 }
 
-                title (subject)
-
-                editor.view ()
+                pin ("editor") {
+                    WeekviewEditor (weekview, speech, store)
+                }
             }
         )
     }
@@ -293,7 +294,7 @@ class WeekviewLayout (weekview : Weekview) : RenderableView (weekview), AutoClos
             Minutes.minutesBetween (target, DateTime ()).isGreaterThan (minutes)
 
         private fun convert               (event : Event) : WeekViewEvent {
-            val id = identifiers.getOrPut (event.id ()) { Random ().nextLong() }
+            val id = identifiers.getOrPut (event.id ()) { Random ().nextLong () }
 
             return WeekViewEvent (id, event.title (), event.location (), calendar (event.start ()), calendar (event.end ()))
         }
