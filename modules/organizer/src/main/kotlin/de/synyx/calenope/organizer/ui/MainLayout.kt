@@ -68,38 +68,6 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         overview.view ()
     }
 
-    private class FilterCallback (val done : (Boolean) -> Unit) : ActionMode.Callback {
-
-        var backbutton = true
-
-        override fun onCreateActionMode (mode : ActionMode, menu : Menu) : Boolean {
-            mode.title = "Filter Calendar"
-            mode.menuInflater.inflate (R.menu.overview_filter, menu)
-
-            return true
-        }
-
-        override fun onPrepareActionMode (mode : ActionMode, menu : Menu) : Boolean {
-            return false
-        }
-
-        override fun onActionItemClicked (mode : ActionMode, item : MenuItem) : Boolean {
-            when (item.itemId) {
-                R.id.overview_settings_filter_update -> {
-                    backbutton = false
-                    mode.finish ()
-                }
-            }
-
-            return true
-        }
-
-        override fun onDestroyActionMode (mode : ActionMode) {
-            done (backbutton)
-        }
-
-    }
-
     private val tiles : RenderableAdapter by lazy {
         RenderableAdapter { item, position ->
             TextCard (
@@ -224,6 +192,38 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
             filtering  = overview.filtering
             synchronizing = overview.synchronizing
             notifyDataSetChanged ()
+        }
+
+    }
+
+    private class FilterCallback (val done : (Boolean) -> Unit) : ActionMode.Callback {
+
+        var backbutton = true
+
+        override fun onCreateActionMode (mode : ActionMode, menu : Menu) : Boolean {
+            mode.title = "Filter Calendar"
+            mode.menuInflater.inflate (R.menu.overview_filter, menu)
+
+            return true
+        }
+
+        override fun onPrepareActionMode (mode : ActionMode, menu : Menu) : Boolean {
+            return false
+        }
+
+        override fun onActionItemClicked (mode : ActionMode, item : MenuItem) : Boolean {
+            when (item.itemId) {
+                R.id.overview_settings_filter_update -> {
+                    backbutton = false
+                    mode.finish ()
+                }
+            }
+
+            return true
+        }
+
+        override fun onDestroyActionMode (mode : ActionMode) {
+            done (backbutton)
         }
 
     }
