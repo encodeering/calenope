@@ -46,17 +46,17 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
     private val store by lazy { Application.store }
 
-    companion object {
-
-        val fallback = "Nothing selected"
-
-    }
-
     private val subscription : Runnable
+
+    private var modeback : ActionMode.Callback? = null
 
     init {
         subscription = store.subscribe {
             tiles.update (store.state.overview)
+
+            if (! store.state.overview.synchronizing &&
+                ! store.state.overview.filtering     &&
+                    tiles.itemCount == 0) filtermode ()
         }
     }
 
@@ -101,8 +101,6 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
     }
 
     private val tiles : RenderableAdapter by lazy {
-        var modeback : ActionMode.Callback? = null
-
         RenderableAdapter { item, position ->
             TextCard (
                 text = {
@@ -115,15 +113,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                 card = {
                     always += {
                         onLongClick {
-                            if (modeback == null)
-                                modeback = FilterCallback {
-                                                                                                        backbutton ->
-                                store.dispatcher.dispatch (SelectCalendarFilter (false, stash = if (backbutton) store.state.overview.stash else tiles.selection (false)))
-                                modeback = null
-                            }.apply {
-                                startActionMode (this)
-                                store.dispatcher.dispatch (SelectCalendarFilter (true))
-                            }
+                            filtermode ()
 
                             true
                         }
@@ -134,7 +124,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
                             }
                         }
                         else {
-                            if (item != fallback) onClick {
+                            onClick {
                                 run {
                                     store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
                                     store.dispatcher.dispatch (OpenWeekview (main))
@@ -190,6 +180,17 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         )
     }
 
+    private fun filtermode () {
+        if (modeback == null)
+            modeback = FilterCallback {                                             backbutton ->
+                store.dispatcher.dispatch (SelectCalendarFilter (false, stash = if (backbutton) store.state.overview.stash else tiles.selection (false)))
+                modeback = null
+            }.apply {
+                startActionMode (this)
+                store.dispatcher.dispatch (SelectCalendarFilter (true))
+            }
+    }
+
     private class RenderableAdapter (private val view : (value : String, position : Int) -> Anvil.Renderable) : RenderableRecyclerViewAdapter () {
 
         private var filtering = false
@@ -199,7 +200,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         private var selections = mutableMapOf<Int, Boolean> ()
 
         private val visibles : Collection<String>
-            get () = (if (filtering) last else selection (true)).run { if (isEmpty () && ! synchronizing) listOf (fallback) else this }
+            get () = if (filtering) last else selection (true)
 
         override fun view (holder : RecyclerView.ViewHolder) {
             val                       position = holder.layoutPosition
