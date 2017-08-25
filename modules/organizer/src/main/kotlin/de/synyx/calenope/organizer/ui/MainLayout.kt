@@ -19,27 +19,17 @@ import de.synyx.calenope.organizer.State.Overview
 import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.color
 import de.synyx.calenope.organizer.component.Layouts.Regular
-import trikita.anvil.DSL.CENTER
-import trikita.anvil.DSL.MATCH
-import trikita.anvil.DSL.centerHorizontal
-import trikita.anvil.DSL.dip
-import trikita.anvil.DSL.gravity
-import trikita.anvil.DSL.margin
+import de.synyx.calenope.organizer.component.TextCard
+import trikita.anvil.Anvil
 import trikita.anvil.DSL.onClick
 import trikita.anvil.DSL.onLongClick
-import trikita.anvil.DSL.sip
-import trikita.anvil.DSL.size
 import trikita.anvil.DSL.text
 import trikita.anvil.DSL.textColor
-import trikita.anvil.DSL.textSize
-import trikita.anvil.DSL.textView
 import trikita.anvil.RenderableRecyclerViewAdapter
 import trikita.anvil.RenderableView
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.onMenuItemClick
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.title
 import trikita.anvil.appcompat.v7.AppCompatv7DSL.titleTextColor
-import trikita.anvil.cardview.v7.CardViewv7DSL.cardView
-import trikita.anvil.cardview.v7.CardViewv7DSL.radius
 import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.adapter
 import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.gridLayoutManager
 import trikita.anvil.recyclerview.v7.RecyclerViewv7DSL.itemAnimator
@@ -114,52 +104,46 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         var modeback : ActionMode.Callback? = null
 
         RenderableAdapter { item, position ->
-            cardView {
-                size (MATCH, dip (64))
+            TextCard (
+                text = {
+                    always += {
+                        text (item)
+                        textColor (if (! store.state.overview.filtering || tiles.selected (position)) color (R.color.primary_text) else color (R.color.secondary_text))
+                    }
+                },
 
-                gravity (CENTER)
+                card = {
+                    always += {
+                        onLongClick {
+                            if (modeback == null)
+                                modeback = FilterCallback {
+                                                                                                        backbutton ->
+                                store.dispatcher.dispatch (SelectCalendarFilter (false, stash = if (backbutton) store.state.overview.stash else tiles.selection (false)))
+                                modeback = null
+                            }.apply {
+                                startActionMode (this)
+                                store.dispatcher.dispatch (SelectCalendarFilter (true))
+                            }
 
-                margin (dip (0), dip (0), dip (0), dip (1))
-                radius (0.0f)
-
-                textView {
-                    size (MATCH, MATCH)
-                    text (item)
-                    textSize (sip (10.toFloat ()))
-                    textColor (if (! store.state.overview.filtering || tiles.selected (position)) color (R.color.primary_text) else color (R.color.secondary_text))
-                    centerHorizontal ()
-                    margin (dip (20))
-                }
-
-                onLongClick {
-                    if (modeback == null)
-                        modeback = FilterCallback {
-                                                                                                backbutton ->
-                            store.dispatcher.dispatch (SelectCalendarFilter (false, stash = if (backbutton) store.state.overview.stash else tiles.selection (false)))
-                            modeback = null
-                        }.apply {
-                            startActionMode (this)
-                            store.dispatcher.dispatch (SelectCalendarFilter (true))
+                            true
                         }
 
-                    true
-                }
-
-                if (store.state.overview.filtering) {
-                    onClick {
-                        tiles.toggle (position)
-                    }
-                }
-                else {
-                    if (item == fallback) onClick {}
-                    else                  onClick {
-                        run {
-                            store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
-                            store.dispatcher.dispatch (OpenWeekview (main))
+                        if (store.state.overview.filtering) {
+                            onClick {
+                                tiles.toggle (position)
+                            }
+                        }
+                        else {
+                            if (item != fallback) onClick {
+                                run {
+                                    store.dispatcher.dispatch (SelectCalendar (item as String? ?: ""))
+                                    store.dispatcher.dispatch (OpenWeekview (main))
+                                }
+                            }
                         }
                     }
                 }
-            }
+            )
         }
     }
 
@@ -206,7 +190,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
         )
     }
 
-    private class RenderableAdapter (private val view : (value : String, position : Int) -> Unit) : RenderableRecyclerViewAdapter () {
+    private class RenderableAdapter (private val view : (value : String, position : Int) -> Anvil.Renderable) : RenderableRecyclerViewAdapter () {
 
         private var filtering = false
         private var synchronizing = false
@@ -219,7 +203,7 @@ class MainLayout (private val main : Main) : RenderableView (main), AutoCloseabl
 
         override fun view (holder : RecyclerView.ViewHolder) {
             val                       position = holder.layoutPosition
-            view (visibles.elementAt (position), position)
+            view (visibles.elementAt (position), position).view ()
         }
 
         override fun getItemCount () : Int = visibles.size
