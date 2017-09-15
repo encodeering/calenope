@@ -4,11 +4,12 @@ import android.content.Intent
 import android.util.Log
 import com.encodeering.conflate.experimental.api.Action
 import com.encodeering.conflate.experimental.api.Middleware
-import com.encodeering.conflate.experimental.api.Middleware.Connection
-import com.encodeering.conflate.experimental.api.Middleware.Interceptor
+import com.encodeering.conflate.experimental.epic.Epic
+import com.encodeering.conflate.experimental.epic.Story
+import com.encodeering.conflate.experimental.epic.Story.Happening
+import com.encodeering.conflate.experimental.epic.story.Book.anecdote
 import com.google.api.client.googleapis.extensions.android.accounts.GoogleAccountManager
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
-import de.synyx.calenope.core.api.model.Event
 import de.synyx.calenope.core.api.service.Board
 import de.synyx.calenope.core.spi.BoardProvider
 import de.synyx.calenope.organizer.Application
@@ -17,118 +18,106 @@ import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.rx.delay
 import de.synyx.calenope.organizer.rx.eventloop
-import io.reactivex.Observable
-import kotlinx.coroutines.experimental.launch
+import io.reactivex.Observable.concat
+import io.reactivex.Observable.empty
+import io.reactivex.Observable.just
 import org.joda.time.DateTime
 import java.util.ServiceLoader
 import java.util.TimeZone
-import kotlin.coroutines.experimental.Continuation
-import kotlin.coroutines.experimental.EmptyCoroutineContext
-import kotlin.coroutines.experimental.startCoroutine
-import kotlin.coroutines.experimental.suspendCoroutine
 import kotlin.properties.Delegates
 
-class GoogleMiddleware(private val application : Application) : Middleware<State> {
+/**
+ * @author clausen - clausen@synyx.de
+ */
+class GoogleMiddleware private constructor (private val application : Application) {
 
     companion object {
 
         private val TAG = GoogleMiddleware::class.java.name
 
+        fun middleware (application : Application) : Middleware<State> = GoogleMiddleware (application).run {
+            Epic (
+                anecdote (),
+                account (),
+                calendars (),
+                events ()
+            )
+        }
+
     }
 
-    override fun interceptor (connection : Connection<State>) : Interceptor {
-        return object : Interceptor {
+    private var board : Board? = null
 
-            private var board : Board? by Delegates.observable (null as Board?) { _, previous, next ->
-                if (next == previous) return@observable
+    private var account : String by Delegates.observable ("") { _, previous, next ->
+        if (next == previous) return@observable
+        if (next.isBlank ())  return@observable
 
-                resynchronize ()
-            }
+        val meta = mapOf (
+            "context" to application.applicationContext,
+            "account" to GoogleAccountManager (application).getAccountByName (next)
+        )
 
-            private var account : String by Delegates.observable ("") { _, previous, next ->
-                if (next == previous) return@observable
-                if (next.isBlank ())  return@observable
+        board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
+    }
 
-                val meta = mapOf (
-                    "context" to application.applicationContext,
-                    "account" to GoogleAccountManager (application).getAccountByName (next)
-                )
+    private fun account () : Story<State>  {
+        return anecdote {
+            it.flatMap { (_, state) ->
+                val known = account
+                            account = state.setting.account
 
-                board = ServiceLoader.load (BoardProvider::class.java).map { it.create (meta) }.firstOrNull ()
-            }
-
-            suspend override fun dispatch (action : Action) {
-                when (action) {
-                    is SynchronizeAccount  -> {
-                                           connection.next (action.copy (emptyList ()))
-                        return calendars { connection.next (action.copy (it, synchronizing = false)) }
-                    }
-                    is SynchronizeCalendar -> {
-                                                                                                connection.next (action.copy (events = emptyList ()))
-                        return events (connection.state.overview.selection ?: "", action.key) { connection.next (action.copy (events = it, synchronizing = false)) }
-                    }
-                }
-
-                connection.next (action)
-
-                account = connection.state.setting.account
-            }
-
-            private fun resynchronize () {
-                launch (EmptyCoroutineContext) { connection.initial (SynchronizeAccount ()) }
-            }
-
-            private suspend fun calendars (observer : suspend (Collection<String>) -> Unit) {
-                oauth (observer, emptyList<String> ()) {
-                    all ().map { it.id () }
-                }
-            }
-
-            private suspend fun events (calendar : String, start : Pair<Int, Int>, observer : suspend (Collection<Event>) -> Unit) {
-                val yearmonth = DateTime ().withYear (start.first).withMonthOfYear (start.second)
-
-                val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
-                val to = from.plusMonths (1)
-
-                oauth (observer, emptyList ()) {
-                    name (calendar)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList ()
-                }
-            }
-
-            private suspend fun <R> oauth (action : suspend (R) -> Unit, default : R? = null, command : Board.() -> R) {
-                val observer = delay { command (board!!) }.onErrorResumeNext { e : Throwable ->
-                    Log.e (GoogleMiddleware.TAG, e.message, e)
-
-                    when (e) {
-                        is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
-                    }
-
-                    if (default != null) Observable.just (default)
-                    else
-                        Observable.empty<R> ()
-                }.eventloop ()
-
-                suspendCoroutine<Unit> { continuation ->
-                    observer.subscribe ({
-
-                        action.startCoroutine (it, object : Continuation<Unit> {
-
-                            override val context = EmptyCoroutineContext
-
-                            override fun resume (value : Unit) {
-                                continuation.resume     (Unit)
-                            }
-
-                            override fun resumeWithException     (exception : Throwable) {
-                                continuation.resumeWithException (exception)
-                            }
-
-                        })
-
-                    }, continuation::resumeWithException)
+                when {
+                    known != account -> just (initial (SynchronizeAccount ()))
+                    else             -> empty()
                 }
             }
         }
     }
 
+    private fun calendars () : Story<State> {
+        return anecdote (SynchronizeAccount::class.java) {
+            it.flatMap { (action) ->
+                val initial = just  (                                                        next (action.copy (calendars = emptyList ()))              )
+                val request = oauth (emptyList<String> ()) { all ().map { it.id () } }.map { next (action.copy (calendars = it, synchronizing = false)) }
+
+                concat (initial, request)
+            }
+        }
+    }
+
+    private fun events () : Story<State> {
+        return anecdote (SynchronizeCalendar::class.java) {
+            it.flatMap { (action, state) ->
+                val selection = state.overview.selection ?: ""
+                val yearmonth = DateTime ().withYear (action.year).withMonthOfYear (action.month)
+
+                val      from = yearmonth.withDayOfMonth (1).withTimeAtStartOfDay ()
+                val to = from.plusMonths (1)
+
+                val initial = just  (                                                                                                                                       next (action.copy (events = emptyList ()))              )
+                val request = oauth (emptyList ()) { name (selection)?.query ()?.between (from.toInstant(), to.toInstant(), TimeZone.getDefault ()) ?: emptyList () }.map { next (action.copy (events = it, synchronizing = false)) }
+
+                concat (initial, request)
+            }
+        }
+    }
+
+    private fun <R> oauth (default : R? = null, command : Board.() -> R) =
+        delay { command (board!!) }.onErrorResumeNext { e : Throwable ->
+            Log.e (TAG, e.message, e)
+
+            when (e) {
+                is UserRecoverableAuthIOException -> application.startActivity (e.intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK))
+            }
+
+            if (default != null) just (default)
+            else
+                empty<R> ()
+        }.eventloop ()
 }
+
+
+private fun initial (action : Action) : Happening = Happening.Initial (action)
+
+private fun next (action : Action) : Happening = Happening.Next (action)
+
