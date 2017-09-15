@@ -39,7 +39,7 @@ class Application : android.app.Application () {
 
         self = this
 
-        store = conflate (State.Default (), State, GoogleMiddleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
+        store = conflate (State.Default (), State, GoogleMiddleware.middleware (this), FlowMiddleware (), DataMiddleware (this), logging ())
         store.subscribe {
             handler.postDelayed (Anvil::render, 0)
         }
