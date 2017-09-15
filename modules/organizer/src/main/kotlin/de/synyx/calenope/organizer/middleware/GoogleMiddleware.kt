@@ -17,9 +17,9 @@ import de.synyx.calenope.organizer.SynchronizeAccount
 import de.synyx.calenope.organizer.SynchronizeCalendar
 import de.synyx.calenope.organizer.rx.delay
 import de.synyx.calenope.organizer.rx.eventloop
+import io.reactivex.Observable
 import kotlinx.coroutines.experimental.launch
 import org.joda.time.DateTime
-import rx.Observable
 import java.util.ServiceLoader
 import java.util.TimeZone
 import kotlin.coroutines.experimental.Continuation
@@ -96,7 +96,7 @@ class GoogleMiddleware(private val application : Application) : Middleware<State
             }
 
             private suspend fun <R> oauth (action : suspend (R) -> Unit, default : R? = null, command : Board.() -> R) {
-                val observer = delay { command (board!!) }.onErrorResumeNext { e ->
+                val observer = delay { command (board!!) }.onErrorResumeNext { e : Throwable ->
                     Log.e (GoogleMiddleware.TAG, e.message, e)
 
                     when (e) {
